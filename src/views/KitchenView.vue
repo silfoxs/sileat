@@ -147,8 +147,8 @@ async function deleteItem(id: number) {
     </ScrollArea>
 
     <Dialog v-model:open="showDialog">
-      <DialogContent class="glass rounded-xl shadow-2xl sm:max-w-[420px]">
-        <DialogHeader class="pb-2">
+      <DialogContent class="glass sm:max-w-[420px]">
+        <DialogHeader>
           <DialogTitle class="text-lg font-bold">
             {{ editingId ? '编辑美食' : '添加美食' }}
           </DialogTitle>
@@ -192,7 +192,7 @@ async function deleteItem(id: number) {
           </div>
         </div>
 
-        <DialogFooter class="flex-row justify-end gap-3 pt-2">
+        <DialogFooter class="flex-row justify-end gap-3">
           <Button
             variant="outline"
             class="rounded-full px-5"
