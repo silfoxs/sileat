@@ -68,7 +68,7 @@ async function deleteItem(id: number) {
 </script>
 
 <template>
-  <div class="page-shell flex flex-col">
+  <div class="page-shell flex flex-col overflow-visible pb-0">
     <Motion
       :initial="{ opacity: 0, y: -15 }"
       :animate="{ opacity: 1, y: 0 }"
@@ -96,7 +96,7 @@ async function deleteItem(id: number) {
     </div>
 
     <div class="flex-1 overflow-y-auto scrollbar-hidden">
-      <div class="flex flex-col gap-3 pb-3">
+      <div class="flex flex-col gap-3 pb-28">
         <Card
           v-for="item in foodStore.items"
           :key="item.id"
@@ -182,7 +182,13 @@ async function deleteItem(id: number) {
             </div>
             <div class="space-y-2">
               <Label for="dlg-desc">描述</Label>
-              <Input id="dlg-desc" v-model="form.description" placeholder="简单描述（可选）" />
+              <textarea
+                id="dlg-desc"
+                v-model="form.description"
+                placeholder="简单描述（可选）"
+                rows="3"
+                class="border-input focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] dark:bg-input/30 w-full rounded-md border bg-transparent px-3 py-1 text-base shadow-xs outline-none resize-none"
+              />
             </div>
             <div class="space-y-2">
               <Label for="dlg-dist">距离</Label>

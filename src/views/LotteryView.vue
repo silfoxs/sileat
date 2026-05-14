@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref, onMounted, computed, nextTick } from 'vue'
-import { Motion, AnimatePresence } from 'motion-v'
+import { ref, onMounted, computed } from 'vue'
+import { Motion } from 'motion-v'
 import { useFoodStore } from '../stores/food'
 import { useLotteryStore } from '../stores/lottery'
 import { UtensilsCrossed, MapPin } from 'lucide-vue-next'
@@ -16,6 +16,8 @@ const cardScale = ref(1)
 const glowIntensity = ref(0)
 
 const shimmerItems = ref<{ emoji: string; title: string; description: string }[]>([])
+
+const availableCount = computed(() => foodStore.items.filter(i => !i.skip_today).length)
 
 const currentItem = computed(() => {
   if (spinPhase.value === 'spinning') return shimmerItems.value[shimmerIndex.value] || { emoji: '🍜', title: '加载中...', description: '' }
@@ -39,7 +41,7 @@ function updateShimmerItems() {
 }
 
 async function handleSpin() {
-  if ((spinPhase.value !== 'idle' && spinPhase.value !== 'result') || foodStore.items.length === 0) return
+  if ((spinPhase.value !== 'idle' && spinPhase.value !== 'result') || availableCount.value === 0) return
 
   showConfetti.value = false
   spinPhase.value = 'spinning'
@@ -103,7 +105,7 @@ async function handleSpin() {
       <div class="flex w-full max-w-sm flex-col items-center text-center">
         <h1 class="w-full text-center text-[34px] font-extrabold leading-tight text-foreground">今天吃什么</h1>
         <p class="mt-3 text-sm leading-6 text-muted-foreground">
-          {{ foodStore.items.length > 0 ? '轻点卡片，把纠结交给运气。' : '先去后厨添加几个常吃选项。' }}
+          {{ availableCount > 0 ? '轻点卡片，把纠结交给运气。' : '先去后厨添加几个常吃选项。' }}
         </p>
       </div>
     </Motion>
@@ -167,16 +169,18 @@ async function handleSpin() {
               class="relative z-10 flex flex-col items-center"
             >
               <div class="mb-7 text-[7rem] leading-none drop-shadow-lg">{{ lotteryStore.result.emoji }}</div>
-              <h2 class="mb-3 max-w-full truncate text-[1.75rem] font-extrabold leading-tight text-foreground">
-                {{ lotteryStore.result.title }}
-              </h2>
+              <div class="mb-3 flex items-center justify-center gap-2">
+                <h2 class="max-w-full truncate text-[1.75rem] font-extrabold leading-tight text-foreground">
+                  {{ lotteryStore.result.title }}
+                </h2>
+                <span v-if="lotteryStore.result.distance" class="flex-shrink-0 inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-0.5 text-sm font-medium text-primary">
+                  <MapPin class="h-3.5 w-3.5" />
+                  {{ lotteryStore.result.distance }}
+                </span>
+              </div>
               <p v-if="lotteryStore.result.description" class="mb-5 max-w-[260px] text-center text-base leading-7 text-muted-foreground">
                 {{ lotteryStore.result.description }}
               </p>
-              <div v-if="lotteryStore.result.distance" class="flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-primary">
-                <MapPin class="h-3.5 w-3.5" />
-                <span class="text-sm font-medium">{{ lotteryStore.result.distance }}</span>
-              </div>
             </Motion>
           </template>
 
@@ -186,17 +190,17 @@ async function handleSpin() {
               <UtensilsCrossed class="h-12 w-12 text-primary" />
             </div>
             <p class="relative z-10 mb-2 text-xl font-bold text-foreground">
-              {{ foodStore.items.length > 0 ? '点击翻牌' : '暂无选项' }}
+              {{ availableCount > 0 ? '点击翻牌' : '暂无选项' }}
             </p>
             <p class="relative z-10 text-base text-muted-foreground">
-              {{ foodStore.items.length > 0 ? '看看今天吃什么' : '先去后厨添加一些' }}
+              {{ availableCount > 0 ? '看看今天吃什么' : '先去后厨添加一些' }}
             </p>
           </template>
         </div>
       </div>
 
       <p class="relative z-10 mt-8 rounded-full bg-secondary/70 px-3 py-1 text-xs font-medium text-muted-foreground">
-        {{ foodStore.items.length > 0 ? `${foodStore.items.length} 个选项等待翻牌` : '' }}
+        {{ availableCount > 0 ? `${availableCount} 个选项等待翻牌` : '' }}
       </p>
     </div>
 
