@@ -103,41 +103,34 @@ async function deleteItem(id: number) {
     </div>
 
     <ScrollArea class="flex-1">
-      <div class="pb-3">
-        <Motion
-          v-for="(item, index) in foodStore.items"
+      <div class="flex flex-col gap-5 pb-3">
+        <Card
+          v-for="item in foodStore.items"
           :key="item.id"
-          :initial="{ opacity: 0, x: -20 }"
-          :animate="{ opacity: 1, x: 0 }"
-          :transition="{ duration: 0.3, delay: index * 0.04 }"
-          class="mt-4 first:mt-0"
+          class="glass group rounded-lg border shadow-sm transition-all hover:shadow-md"
         >
-          <Card class="glass rounded-lg border shadow-sm transition-shadow hover:shadow-md">
-            <CardContent class="flex items-center gap-4 p-5">
-              <div class="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-lg bg-primary/10 text-3xl">
-                {{ item.emoji }}
-              </div>
-              <div class="min-w-0 flex-1">
-                <div class="truncate text-base font-bold text-foreground">{{ item.title }}</div>
-                <div class="mt-1.5 flex items-center gap-2">
-                  <span v-if="item.description" class="truncate text-sm text-muted-foreground">{{ item.description }}</span>
-                </div>
-              </div>
-              <div v-if="item.distance" class="flex flex-shrink-0 items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-1.5 text-xs font-medium text-primary">
-                <MapPin class="h-3.5 w-3.5" />
-                {{ item.distance }}
-              </div>
-              <div class="flex flex-shrink-0 items-center gap-1">
-                <Button variant="ghost" size="icon-sm" @click="editItem(item)">
-                  <Pencil class="h-4 w-4" />
-                </Button>
-                <Button variant="ghost" size="icon-sm" class="hover:text-destructive" @click="deleteItem(item.id)">
-                  <Trash2 class="h-4 w-4" />
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </Motion>
+          <CardContent class="flex items-center gap-4 p-5">
+            <div class="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-lg bg-primary/10 text-3xl">
+              {{ item.emoji }}
+            </div>
+            <div class="min-w-0 flex-1">
+              <div class="truncate text-base font-bold text-foreground">{{ item.title }}</div>
+              <p v-if="item.description" class="mt-1 truncate text-sm text-muted-foreground">{{ item.description }}</p>
+            </div>
+            <div v-if="item.distance" class="flex flex-shrink-0 items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-1.5 text-xs font-medium text-primary">
+              <MapPin class="h-3.5 w-3.5" />
+              {{ item.distance }}
+            </div>
+            <div class="flex flex-shrink-0 items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+              <Button variant="ghost" size="icon-sm" @click="editItem(item)">
+                <Pencil class="h-4 w-4" />
+              </Button>
+              <Button variant="ghost" size="icon-sm" class="hover:text-destructive" @click="deleteItem(item.id)">
+                <Trash2 class="h-4 w-4" />
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
 
         <div
           v-if="foodStore.items.length === 0 && !foodStore.loading"
@@ -146,8 +139,8 @@ async function deleteItem(id: number) {
           <div class="mb-5 flex h-14 w-14 items-center justify-center rounded-lg bg-primary/10">
             <ChefHat class="h-7 w-7 text-primary/60" />
           </div>
-          <p class="mb-2 text-sm font-bold text-foreground">后厨空空如也</p>
-          <p class="text-xs text-muted-foreground">添加第一道美食，抽签马上开火</p>
+          <p class="mb-2 text-base font-bold text-foreground">后厨空空如也</p>
+          <p class="text-sm text-muted-foreground">添加第一道美食，抽签马上开火</p>
         </div>
       </div>
     </ScrollArea>
