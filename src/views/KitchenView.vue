@@ -7,17 +7,10 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent } from '@/components/ui/card'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from '@/components/ui/dialog'
+import { DialogRoot, DialogPortal, DialogOverlay, DialogContent, DialogTitle, DialogDescription, DialogClose } from 'reka-ui'
 import EmojiPicker from '../components/EmojiPicker.vue'
 import type { FoodFormData } from '../types/food'
-import { Plus, Pencil, Trash2, MapPin, ChefHat } from 'lucide-vue-next'
+import { Plus, Pencil, Trash2, MapPin, ChefHat, X } from 'lucide-vue-next'
 
 const foodStore = useFoodStore()
 
@@ -146,69 +139,57 @@ async function deleteItem(id: number) {
       </div>
     </ScrollArea>
 
-    <Dialog v-model:open="showDialog">
-      <DialogContent class="glass sm:max-w-[420px]">
-        <DialogHeader>
+    <DialogRoot v-model:open="showDialog">
+      <DialogPortal>
+        <DialogOverlay class="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm" />
+        <DialogContent class="glass fixed left-1/2 top-1/2 z-50 w-[calc(100%-3rem)] max-w-[420px] -translate-x-1/2 -translate-y-1/2 rounded-xl p-7 shadow-2xl">
           <DialogTitle class="text-lg font-bold">
             {{ editingId ? '编辑美食' : '添加美食' }}
           </DialogTitle>
-          <DialogDescription class="text-sm text-muted-foreground">
+          <DialogDescription class="mt-1 text-sm text-muted-foreground">
             {{ editingId ? '修改这道美食的信息' : '填写信息，加入你的抽签池' }}
           </DialogDescription>
-        </DialogHeader>
 
-        <div class="flex items-center gap-4 rounded-lg bg-muted/50 p-4">
-          <EmojiPicker :model-value="form.emoji" @select="e => form.emoji = e" />
-          <div class="min-w-0">
-            <div class="text-sm font-semibold text-foreground">选择图标</div>
-            <div class="mt-0.5 text-xs text-muted-foreground">用于抽奖时展示</div>
+          <div class="mt-5 flex items-center gap-4 rounded-lg bg-muted/50 p-4">
+            <EmojiPicker :model-value="form.emoji" @select="e => form.emoji = e" />
+            <div class="min-w-0">
+              <div class="text-sm font-semibold text-foreground">选择图标</div>
+              <div class="mt-0.5 text-xs text-muted-foreground">用于抽奖时展示</div>
+            </div>
           </div>
-        </div>
 
-        <div class="space-y-4">
-          <div class="space-y-2">
-            <Label for="dlg-title">名称</Label>
-            <Input
-              id="dlg-title"
-              v-model="form.title"
-              placeholder="如：兰州拉面"
-            />
+          <div class="mt-5 space-y-4">
+            <div class="space-y-2">
+              <Label for="dlg-title">名称</Label>
+              <Input id="dlg-title" v-model="form.title" placeholder="如：兰州拉面" />
+            </div>
+            <div class="space-y-2">
+              <Label for="dlg-desc">描述</Label>
+              <Input id="dlg-desc" v-model="form.description" placeholder="简单描述（可选）" />
+            </div>
+            <div class="space-y-2">
+              <Label for="dlg-dist">距离</Label>
+              <Input id="dlg-dist" v-model="form.distance" placeholder="如 500m（可选）" />
+            </div>
           </div>
-          <div class="space-y-2">
-            <Label for="dlg-desc">描述</Label>
-            <Input
-              id="dlg-desc"
-              v-model="form.description"
-              placeholder="简单描述（可选）"
-            />
-          </div>
-          <div class="space-y-2">
-            <Label for="dlg-dist">距离</Label>
-            <Input
-              id="dlg-dist"
-              v-model="form.distance"
-              placeholder="如 500m（可选）"
-            />
-          </div>
-        </div>
 
-        <DialogFooter class="flex-row justify-end gap-3">
-          <Button
-            variant="outline"
-            class="rounded-full px-5"
-            @click="showDialog = false; resetForm()"
-          >
-            取消
-          </Button>
-          <Button
-            class="rounded-full px-5"
-            :disabled="!form.title.trim()"
-            @click="handleSubmit"
-          >
-            {{ editingId ? '保存' : '添加' }}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+          <div class="mt-6 flex justify-end gap-3">
+            <DialogClose as-child>
+              <Button variant="outline" class="rounded-full px-5" @click="resetForm()">
+                取消
+              </Button>
+            </DialogClose>
+            <Button class="rounded-full px-5" :disabled="!form.title.trim()" @click="handleSubmit">
+              {{ editingId ? '保存' : '添加' }}
+            </Button>
+          </div>
+
+          <DialogClose class="absolute right-4 top-4 rounded-sm opacity-70 transition-opacity hover:opacity-100">
+            <X class="h-4 w-4" />
+            <span class="sr-only">关闭</span>
+          </DialogClose>
+        </DialogContent>
+      </DialogPortal>
+    </DialogRoot>
   </div>
 </template>
