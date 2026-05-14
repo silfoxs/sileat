@@ -97,7 +97,7 @@ async function deleteItem(id: number) {
     </div>
 
     <ScrollArea class="flex-1">
-      <div class="flex flex-col gap-5 pb-3">
+      <div class="flex flex-col gap-3 pb-3">
         <Card
           v-for="item in foodStore.items"
           :key="item.id"
@@ -109,7 +109,7 @@ async function deleteItem(id: number) {
             </div>
             <div class="min-w-0 flex-1">
               <div class="truncate text-base font-bold text-foreground">{{ item.title }}</div>
-              <p v-if="item.description" class="mt-1 truncate text-sm text-muted-foreground">{{ item.description }}</p>
+              <p v-if="item.description" class="mt-1 line-clamp-2 text-sm text-muted-foreground">{{ item.description }}</p>
             </div>
             <div v-if="item.distance" class="flex flex-shrink-0 items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-1.5 text-xs font-medium text-primary">
               <MapPin class="h-3.5 w-3.5" />
