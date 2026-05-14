@@ -10,6 +10,7 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
   DialogFooter,
@@ -146,57 +147,57 @@ async function deleteItem(id: number) {
     </ScrollArea>
 
     <Dialog v-model:open="showDialog">
-      <DialogContent class="glass max-w-[360px] rounded-lg border p-5 shadow-2xl sm:max-w-[360px]">
-        <DialogHeader class="pb-1">
-          <DialogTitle class="text-base">
+      <DialogContent class="glass gap-0 rounded-xl p-0 shadow-2xl sm:max-w-[400px]">
+        <DialogHeader class="border-b border-border px-6 py-4">
+          <DialogTitle class="text-lg font-bold">
             {{ editingId ? '编辑美食' : '添加美食' }}
           </DialogTitle>
+          <DialogDescription class="text-sm text-muted-foreground">
+            {{ editingId ? '修改这道美食的信息' : '填写信息，加入你的抽签池' }}
+          </DialogDescription>
         </DialogHeader>
 
-        <div class="space-y-4 py-2">
-          <div class="flex items-center gap-3 rounded-lg bg-background/40 p-2.5">
+        <div class="space-y-5 px-6 py-5">
+          <div class="flex items-center gap-4 rounded-lg bg-muted/50 p-3">
             <EmojiPicker :model-value="form.emoji" @select="e => form.emoji = e" />
             <div class="min-w-0">
-              <div class="text-sm font-bold text-foreground">选择图标</div>
+              <div class="text-sm font-semibold text-foreground">选择图标</div>
               <div class="mt-0.5 text-xs text-muted-foreground">用于抽奖时展示</div>
             </div>
           </div>
 
-          <div class="space-y-3">
-            <div class="space-y-1.5">
-              <Label for="dlg-title" class="text-xs text-muted-foreground">名称</Label>
+          <div class="space-y-4">
+            <div class="space-y-2">
+              <Label for="dlg-title">名称</Label>
               <Input
                 id="dlg-title"
                 v-model="form.title"
                 placeholder="如：兰州拉面"
-                class="rounded-lg bg-background/70"
               />
             </div>
-            <div class="space-y-1.5">
-              <Label for="dlg-desc" class="text-xs text-muted-foreground">描述</Label>
+            <div class="space-y-2">
+              <Label for="dlg-desc">描述</Label>
               <Input
                 id="dlg-desc"
                 v-model="form.description"
                 placeholder="简单描述（可选）"
-                class="rounded-lg bg-background/70"
               />
             </div>
-            <div class="space-y-1.5">
-              <Label for="dlg-dist" class="text-xs text-muted-foreground">距离</Label>
+            <div class="space-y-2">
+              <Label for="dlg-dist">距离</Label>
               <Input
                 id="dlg-dist"
                 v-model="form.distance"
                 placeholder="如 500m（可选）"
-                class="rounded-lg bg-background/70"
               />
             </div>
           </div>
         </div>
 
-        <DialogFooter class="gap-2 pt-1">
+        <DialogFooter class="border-t border-border px-6 py-4">
           <Button
             variant="outline"
-            class="rounded-lg bg-background/60"
+            class="rounded-lg"
             @click="showDialog = false; resetForm()"
           >
             取消
