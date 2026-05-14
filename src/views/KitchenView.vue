@@ -5,7 +5,7 @@ import { useFoodStore } from '../stores/food'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Card, CardContent } from '@/components/ui/card'
+import { Card } from '@/components/ui/card'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { DialogRoot, DialogPortal, DialogOverlay, DialogContent, DialogTitle, DialogDescription, DialogClose } from 'reka-ui'
 import EmojiPicker from '../components/EmojiPicker.vue'
@@ -107,7 +107,7 @@ async function deleteItem(id: number) {
             class="absolute left-0 top-0 h-full w-[3px]"
             :class="item.skip_today ? 'bg-red-400/70' : 'bg-green-400/70'"
           />
-          <CardContent class="flex items-center gap-4 py-5 pl-10 pr-5">
+          <div class="flex items-center gap-4 py-5 pl-10 pr-5">
             <div class="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-lg bg-primary/10 text-3xl">
               {{ item.emoji }}
             </div>
@@ -138,7 +138,7 @@ async function deleteItem(id: number) {
                 </Button>
               </div>
             </div>
-          </CardContent>
+          </div>
         </Card>
 
         <div
