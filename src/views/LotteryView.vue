@@ -39,13 +39,7 @@ function updateShimmerItems() {
 }
 
 async function handleSpin() {
-  if (spinPhase.value === 'result') {
-    spinPhase.value = 'idle'
-    lotteryStore.reset()
-    glowIntensity.value = 0
-    return
-  }
-  if (spinPhase.value !== 'idle' || foodStore.items.length === 0) return
+  if ((spinPhase.value !== 'idle' && spinPhase.value !== 'result') || foodStore.items.length === 0) return
 
   showConfetti.value = false
   spinPhase.value = 'spinning'
