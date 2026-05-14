@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
-import { Motion } from 'motion-v'
+import { ref, onMounted, computed, nextTick } from 'vue'
+import { Motion, AnimatePresence } from 'motion-v'
 import { useFoodStore } from '../stores/food'
 import { useLotteryStore } from '../stores/lottery'
 import { UtensilsCrossed, MapPin } from 'lucide-vue-next'
@@ -8,14 +8,17 @@ import { UtensilsCrossed, MapPin } from 'lucide-vue-next'
 const foodStore = useFoodStore()
 const lotteryStore = useLotteryStore()
 
-const cardRotation = ref(0)
 const shimmerIndex = ref(0)
 const showConfetti = ref(false)
+const spinPhase = ref<'idle' | 'spinning' | 'reveal' | 'result'>('idle')
+const spinSpeed = ref(60)
+const cardScale = ref(1)
+const glowIntensity = ref(0)
 
 const shimmerItems = ref<{ emoji: string; title: string; description: string }[]>([])
 
 const currentItem = computed(() => {
-  if (lotteryStore.isSpinning) return shimmerItems.value[shimmerIndex.value] || { emoji: '🍜', title: '加载中...', description: '' }
+  if (spinPhase.value === 'spinning') return shimmerItems.value[shimmerIndex.value] || { emoji: '🍜', title: '加载中...', description: '' }
   return null
 })
 
@@ -36,24 +39,71 @@ function updateShimmerItems() {
 }
 
 async function handleSpin() {
-  if (lotteryStore.isSpinning || foodStore.items.length === 0) return
+  if (spinPhase.value !== 'idle' || foodStore.items.length === 0) return
 
   showConfetti.value = false
+  spinPhase.value = 'spinning'
+  spinSpeed.value = 50
+  glowIntensity.value = 0
 
-  const spinInterval = setInterval(() => {
+  // Phase 1: Fast spinning with increasing speed
+  let elapsed = 0
+  const totalDuration = 2200
+  let lastTick = Date.now()
+
+  function tick() {
+    const now = Date.now()
+    const dt = now - lastTick
+    lastTick = now
+    elapsed += dt
+
+    // Progress 0 → 1
+    const progress = Math.min(elapsed / totalDuration, 1)
+
+    // Speed curve: fast → slow (ease-out)
+    spinSpeed.value = 40 + progress * 200
+
+    // Scale pulsing during spin
+    cardScale.value = 1 + Math.sin(elapsed * 0.01) * 0.03
+
+    // Glow increases
+    glowIntensity.value = progress * 0.6
+
     shimmerIndex.value = (shimmerIndex.value + 1) % shimmerItems.value.length
-    cardRotation.value += 20
-  }, 60)
+
+    if (progress < 1) {
+      setTimeout(tick, spinSpeed.value)
+    }
+  }
+
+  tick()
 
   await lotteryStore.spin()
 
-  clearInterval(spinInterval)
-  cardRotation.value = 0
+  // Phase 2: Reveal flash
+  spinPhase.value = 'reveal'
+  cardScale.value = 1.15
+  glowIntensity.value = 1
   showConfetti.value = true
 
+  await nextTick()
+
+  // Phase 3: Settle into result
   setTimeout(() => {
-    showConfetti.value = false
-  }, 3000)
+    spinPhase.value = 'result'
+    cardScale.value = 1
+    glowIntensity.value = 0.3
+
+    setTimeout(() => {
+      showConfetti.value = false
+    }, 4000)
+  }, 400)
+}
+
+function handleReset() {
+  spinPhase.value = 'idle'
+  lotteryStore.reset()
+  glowIntensity.value = 0
 }
 </script>
 
@@ -74,47 +124,103 @@ async function handleSpin() {
     </Motion>
 
     <div class="relative z-10 flex w-full flex-1 flex-col items-center justify-center">
-      <Motion
+      <div
+        class="relative w-full max-w-[330px] cursor-pointer select-none"
         :style="{ perspective: '800px' }"
-        class="w-full max-w-[330px] cursor-pointer select-none transition-transform active:scale-[0.98]"
         @click="handleSpin"
       >
-        <div class="relative flex min-h-[318px] flex-col items-center justify-center p-8">
+        <!-- Glow ring behind card -->
+        <div
+          class="absolute inset-0 -m-4 rounded-2xl transition-all duration-500"
+          :style="{
+            opacity: glowIntensity,
+            boxShadow: `0 0 60px 20px color-mix(in oklch, var(--primary) ${glowIntensity * 40}%), 0 0 120px 40px color-mix(in oklch, var(--accent) ${glowIntensity * 20}%)`,
+          }"
+        />
+
+        <div
+          class="relative flex min-h-[318px] flex-col items-center justify-center rounded-2xl p-8 transition-transform"
+          :style="{
+            transform: `scale(${cardScale})`,
+            transitionDuration: spinPhase === 'reveal' ? '300ms' : '100ms',
+            transitionTimingFunction: spinPhase === 'reveal' ? 'cubic-bezier(0.34, 1.56, 0.64, 1)' : 'ease-out',
+          }"
+        >
           <div class="treasure-aura" />
           <div class="treasure-shine" />
           <div class="treasure-core" />
 
-          <template v-if="lotteryStore.isSpinning">
+          <!-- Spinning state -->
+          <template v-if="spinPhase === 'spinning'">
             <div
               class="relative z-10 flex flex-col items-center"
-              :style="{ transform: `rotateY(${cardRotation}deg)` }"
+              :style="{
+                filter: `blur(${Math.max(0, (spinSpeed - 80) * 0.02)}px)`,
+                opacity: 1 - (spinSpeed - 80) * 0.001,
+              }"
             >
-              <div class="mb-7 text-[7rem] leading-none transition-transform duration-75">
-                {{ currentItem?.emoji }}
+              <Motion
+                :key="shimmerIndex"
+                :initial="{ opacity: 0.4, scale: 0.85, y: 10 }"
+                :animate="{ opacity: 1, scale: 1, y: 0 }"
+                :transition="{ duration: 0.08 }"
+                class="flex flex-col items-center"
+              >
+                <div class="mb-7 text-[7rem] leading-none">
+                  {{ currentItem?.emoji }}
+                </div>
+                <h2 class="mb-3 max-w-full truncate text-[1.75rem] font-extrabold leading-tight text-foreground">
+                  {{ currentItem?.title }}
+                </h2>
+                <p v-if="currentItem?.description" class="mb-5 max-w-[260px] text-center text-base leading-7 text-muted-foreground">
+                  {{ currentItem?.description }}
+                </p>
+              </Motion>
+              <div class="flex items-center gap-2 rounded-full bg-primary/15 px-3 py-1.5 text-primary">
+                <div class="h-1.5 w-1.5 animate-ping rounded-full bg-primary" />
+                <span class="text-xs font-semibold">抽取中...</span>
               </div>
+            </div>
+          </template>
+
+          <!-- Reveal flash -->
+          <template v-else-if="spinPhase === 'reveal' && lotteryStore.result">
+            <div class="relative z-10 flex flex-col items-center">
+              <div class="mb-7 text-[8rem] leading-none drop-shadow-lg">
+                {{ lotteryStore.result.emoji }}
+              </div>
+            </div>
+          </template>
+
+          <!-- Result state -->
+          <template v-else-if="spinPhase === 'result' && lotteryStore.result">
+            <Motion
+              :initial="{ opacity: 0, scale: 0.8, y: 20 }"
+              :animate="{ opacity: 1, scale: 1, y: 0 }"
+              :transition="{ type: 'spring', stiffness: 300, damping: 20 }"
+              class="relative z-10 flex flex-col items-center"
+            >
+              <div class="mb-7 text-[7rem] leading-none drop-shadow-lg">{{ lotteryStore.result.emoji }}</div>
               <h2 class="mb-3 max-w-full truncate text-[1.75rem] font-extrabold leading-tight text-foreground">
-                {{ currentItem?.title }}
+                {{ lotteryStore.result.title }}
               </h2>
-              <p v-if="currentItem?.description" class="mb-5 max-w-[260px] text-center text-base leading-7 text-muted-foreground">
-                {{ currentItem?.description }}
+              <p v-if="lotteryStore.result.description" class="mb-5 max-w-[260px] text-center text-base leading-7 text-muted-foreground">
+                {{ lotteryStore.result.description }}
               </p>
-            </div>
+              <div v-if="lotteryStore.result.distance" class="flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-primary">
+                <MapPin class="h-3.5 w-3.5" />
+                <span class="text-sm font-medium">{{ lotteryStore.result.distance }}</span>
+              </div>
+              <button
+                class="mt-5 rounded-full bg-secondary/80 px-5 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+                @click.stop="handleReset"
+              >
+                再来一次
+              </button>
+            </Motion>
           </template>
 
-          <template v-else-if="lotteryStore.showResult && lotteryStore.result">
-            <div class="relative z-10 mb-7 text-[7rem] leading-none drop-shadow-lg">{{ lotteryStore.result.emoji }}</div>
-            <h2 class="relative z-10 mb-3 max-w-full truncate text-[1.75rem] font-extrabold leading-tight text-foreground">
-              {{ lotteryStore.result.title }}
-            </h2>
-            <p v-if="lotteryStore.result.description" class="relative z-10 mb-5 max-w-[260px] text-center text-base leading-7 text-muted-foreground">
-              {{ lotteryStore.result.description }}
-            </p>
-            <div v-if="lotteryStore.result.distance" class="relative z-10 flex items-center gap-1.5 rounded-full bg-primary/10 px-3 py-1 text-primary">
-              <MapPin class="h-3.5 w-3.5" />
-              <span class="text-sm font-medium">{{ lotteryStore.result.distance }}</span>
-            </div>
-          </template>
-
+          <!-- Idle state -->
           <template v-else>
             <div class="relative z-10 mb-8 flex h-24 w-24 items-center justify-center rounded-lg bg-primary/10 shadow-inner">
               <UtensilsCrossed class="h-12 w-12 text-primary" />
@@ -127,28 +233,64 @@ async function handleSpin() {
             </p>
           </template>
         </div>
-      </Motion>
+      </div>
 
       <p class="relative z-10 mt-8 rounded-full bg-secondary/70 px-3 py-1 text-xs font-medium text-muted-foreground">
         {{ foodStore.items.length > 0 ? `${foodStore.items.length} 个选项等待翻牌` : '' }}
       </p>
     </div>
 
-    <div v-if="showConfetti" class="fixed inset-0 pointer-events-none z-40">
+    <!-- Confetti -->
+    <div v-if="showConfetti" class="fixed inset-0 pointer-events-none z-40 overflow-hidden">
       <div
-        v-for="i in 24"
+        v-for="i in 40"
         :key="i"
-        class="absolute animate-ping"
+        class="confetti-piece absolute"
         :style="{
-          left: `${Math.random() * 100}%`,
-          top: `${Math.random() * 100}%`,
-          animationDuration: `${1 + Math.random() * 2}s`,
-          animationDelay: `${Math.random() * 0.5}s`,
-          fontSize: `${10 + Math.random() * 14}px`,
+          left: `${10 + Math.random() * 80}%`,
+          top: '-5%',
+          '--drift': `${(Math.random() - 0.5) * 200}px`,
+          '--fall': `${60 + Math.random() * 40}vh`,
+          '--spin': `${Math.random() * 720}deg`,
+          '--duration': `${1.5 + Math.random() * 2}s`,
+          '--delay': `${Math.random() * 0.6}s`,
+          '--size': `${8 + Math.random() * 10}px`,
+          '--hue': `${Math.random() * 360}`,
         }"
-      >
-        {{ ['🎉', '✨', '🎊', '⭐', '💫', '🌟'][i % 6] }}
-      </div>
+      />
     </div>
   </div>
 </template>
+
+<style scoped>
+.confetti-piece {
+  width: var(--size);
+  height: var(--size);
+  background: oklch(0.75 0.18 var(--hue));
+  border-radius: 2px;
+  animation: confetti-fall var(--duration) cubic-bezier(0.25, 0.46, 0.45, 0.94) var(--delay) forwards;
+}
+
+.confetti-piece:nth-child(odd) {
+  border-radius: 50%;
+}
+
+.confetti-piece:nth-child(3n) {
+  width: calc(var(--size) * 0.6);
+  height: calc(var(--size) * 1.4);
+}
+
+@keyframes confetti-fall {
+  0% {
+    transform: translateY(0) translateX(0) rotate(0deg) scale(1);
+    opacity: 1;
+  }
+  80% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(var(--fall)) translateX(var(--drift)) rotate(var(--spin)) scale(0.3);
+    opacity: 0;
+  }
+}
+</style>
