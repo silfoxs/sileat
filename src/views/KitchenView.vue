@@ -107,7 +107,7 @@ async function deleteItem(id: number) {
             class="absolute left-0 top-0 h-full w-[3px]"
             :class="item.skip_today ? 'bg-red-400/70' : 'bg-green-400/70'"
           />
-          <CardContent class="flex items-center gap-4 p-5">
+          <CardContent class="flex items-center gap-4 py-5 pl-8 pr-5">
             <div class="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-lg bg-primary/10 text-3xl">
               {{ item.emoji }}
             </div>
