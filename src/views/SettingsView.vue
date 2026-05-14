@@ -2,7 +2,6 @@
 import { Motion } from 'motion-v'
 import { useSettingsStore } from '../stores/settings'
 import { Card, CardContent } from '@/components/ui/card'
-import { ScrollArea } from '@/components/ui/scroll-area'
 import ThemeToggle from '../components/ThemeToggle.vue'
 import { Settings, Moon, Sun, Info, Database } from 'lucide-vue-next'
 import { computed } from 'vue'
@@ -29,7 +28,7 @@ const themeIcon = computed(() => settings.theme === 'dark' ? Moon : Sun)
       </div>
     </Motion>
 
-    <ScrollArea class="flex-1">
+    <div class="flex-1 overflow-y-auto scrollbar-hidden">
       <div class="space-y-4 pb-3">
 
         <Motion
@@ -38,7 +37,7 @@ const themeIcon = computed(() => settings.theme === 'dark' ? Moon : Sun)
           :transition="{ duration: 0.4, delay: 0.1 }"
         >
           <div class="section-label mb-2">外观</div>
-          <Card class="glass rounded-lg border shadow-sm">
+          <Card class="glass rounded-lg border py-0 shadow-sm">
             <CardContent class="flex items-center justify-between p-3.5">
               <div class="flex items-center gap-2.5">
                 <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10">
@@ -62,7 +61,7 @@ const themeIcon = computed(() => settings.theme === 'dark' ? Moon : Sun)
           :transition="{ duration: 0.4, delay: 0.2 }"
         >
           <div class="section-label mb-2">关于</div>
-          <Card class="glass rounded-lg border shadow-sm">
+          <Card class="glass rounded-lg border py-0 shadow-sm">
             <CardContent class="flex flex-col items-center py-6 text-center">
               <div class="mb-3 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
                 <Info class="h-6 w-6 text-primary" />
@@ -80,7 +79,7 @@ const themeIcon = computed(() => settings.theme === 'dark' ? Moon : Sun)
           :transition="{ duration: 0.4, delay: 0.3 }"
         >
           <div class="section-label mb-2">数据</div>
-          <Card class="glass rounded-lg border shadow-sm">
+          <Card class="glass rounded-lg border py-0 shadow-sm">
             <CardContent class="flex items-center gap-2.5 p-3.5">
               <div class="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10">
                 <Database class="h-5 w-5 text-primary" />
@@ -94,6 +93,6 @@ const themeIcon = computed(() => settings.theme === 'dark' ? Moon : Sun)
         </Motion>
 
       </div>
-    </ScrollArea>
+    </div>
   </div>
 </template>

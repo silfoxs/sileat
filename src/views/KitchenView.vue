@@ -6,11 +6,10 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Card } from '@/components/ui/card'
-import { ScrollArea } from '@/components/ui/scroll-area'
 import { DialogRoot, DialogPortal, DialogOverlay, DialogContent, DialogTitle, DialogDescription, DialogClose } from 'reka-ui'
 import EmojiPicker from '../components/EmojiPicker.vue'
 import type { FoodFormData } from '../types/food'
-import { Plus, Pencil, Trash2, MapPin, ChefHat, X, Ban, Check } from 'lucide-vue-next'
+import { Plus, Trash2, MapPin, ChefHat, X, Ban, Check } from 'lucide-vue-next'
 
 const foodStore = useFoodStore()
 
@@ -96,47 +95,50 @@ async function deleteItem(id: number) {
       </Button>
     </div>
 
-    <ScrollArea class="flex-1">
+    <div class="flex-1 overflow-y-auto scrollbar-hidden">
       <div class="flex flex-col gap-3 pb-3">
         <Card
           v-for="item in foodStore.items"
           :key="item.id"
-          class="glass group relative overflow-hidden rounded-lg border transition-all hover:shadow-md"
+          class="glass group relative cursor-pointer overflow-hidden rounded-lg border py-0 transition-all hover:border-primary/30 hover:shadow-md"
+          @click="editItem(item)"
         >
           <div
             class="absolute left-0 top-0 h-full w-[3px]"
             :class="item.skip_today ? 'bg-red-400/70' : 'bg-green-400/70'"
           />
-          <div class="flex items-center gap-4 py-5 pl-10 pr-5">
-            <div class="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-lg bg-primary/10 text-3xl">
+          <div class="flex items-center gap-3 py-3 pl-5 pr-5">
+            <div class="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-lg bg-primary/10 text-2xl">
               {{ item.emoji }}
             </div>
             <div class="min-w-0 flex-1">
-              <div class="truncate text-base font-bold text-foreground">{{ item.title }}</div>
-              <p v-if="item.description" class="mt-1 line-clamp-2 text-sm text-muted-foreground">{{ item.description }}</p>
-            </div>
-            <div v-if="item.distance" class="flex flex-shrink-0 items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-1.5 text-xs font-medium text-primary">
-              <MapPin class="h-3.5 w-3.5" />
-              {{ item.distance }}
+              <div class="flex items-center gap-2">
+                <span class="truncate text-base font-bold text-foreground">{{ item.title }}</span>
+                <span v-if="item.distance" class="flex-shrink-0 inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary">
+                  <MapPin class="h-3 w-3" />
+                  {{ item.distance }}
+                </span>
+              </div>
+              <p v-if="item.description" class="mt-0.5 line-clamp-2 text-sm text-muted-foreground">{{ item.description }}</p>
             </div>
             <div class="flex flex-shrink-0 items-center gap-1">
               <Button
                 variant="ghost"
                 size="icon-sm"
                 :class="item.skip_today ? 'text-red-400' : 'text-muted-foreground'"
-                @click="foodStore.toggleSkipToday(item.id)"
+                @click.stop="foodStore.toggleSkipToday(item.id)"
               >
                 <Ban v-if="!item.skip_today" class="h-4 w-4" />
                 <Check v-else class="h-4 w-4" />
               </Button>
-              <div class="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
-                <Button variant="ghost" size="icon-sm" @click="editItem(item)">
-                  <Pencil class="h-4 w-4" />
-                </Button>
-                <Button variant="ghost" size="icon-sm" class="hover:text-destructive" @click="deleteItem(item.id)">
-                  <Trash2 class="h-4 w-4" />
-                </Button>
-              </div>
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                class="hover:text-destructive opacity-0 transition-opacity group-hover:opacity-100"
+                @click.stop="deleteItem(item.id)"
+              >
+                <Trash2 class="h-4 w-4" />
+              </Button>
             </div>
           </div>
         </Card>
@@ -152,7 +154,7 @@ async function deleteItem(id: number) {
           <p class="text-sm text-muted-foreground">添加第一道美食，抽签马上开火</p>
         </div>
       </div>
-    </ScrollArea>
+    </div>
 
     <DialogRoot v-model:open="showDialog">
       <DialogPortal>
