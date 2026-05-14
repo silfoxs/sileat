@@ -27,9 +27,9 @@
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) * 1.4);
   --radius-2xl: calc(var(--radius) * 1.8);
-  --text-xs: 0.8125rem;
-  --text-sm: 0.9375rem;
-  --text-base: 1.0625rem;
+  --text-xs: 0.875rem;
+  --text-sm: 1rem;
+  --text-base: 1.125rem;
 }
 
 /* Light theme */
@@ -122,7 +122,7 @@ html, body, #app {
 
 body {
   font-family: "STXingkai", "华文行楷", "Xingkai SC", "LXGW WenKai", "KaiTi", "楷体", Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif;
-  font-size: 17px;
+  font-size: 18px;
   line-height: 1.55;
   background: linear-gradient(135deg, var(--bg-gradient-from), var(--bg-gradient-via), var(--bg-gradient-to));
   -webkit-font-smoothing: antialiased;
