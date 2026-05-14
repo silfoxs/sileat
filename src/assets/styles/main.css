@@ -262,37 +262,49 @@ body::before {
   inset: 12px;
   border-radius: 12px;
   background:
-    linear-gradient(90deg, var(--ornament-gold) 0 48px, transparent 48px) top left / 86px 2px no-repeat,
-    linear-gradient(180deg, var(--ornament-gold) 0 48px, transparent 48px) top left / 2px 86px no-repeat,
-    linear-gradient(90deg, transparent 0 14px, var(--ornament-gold) 14px 44px, transparent 44px) 14px 14px / 70px 2px no-repeat,
-    linear-gradient(180deg, transparent 0 14px, var(--ornament-gold) 14px 44px, transparent 44px) 14px 14px / 2px 70px no-repeat,
-    linear-gradient(90deg, transparent 0 28px, var(--ornament-gold) 28px 58px, transparent 58px) 14px 28px / 70px 2px no-repeat,
-    linear-gradient(180deg, transparent 0 28px, var(--ornament-gold) 28px 58px, transparent 58px) 28px 14px / 2px 70px no-repeat,
+    /* ── Top-left outer ── */
+    linear-gradient(90deg, var(--ornament-gold) 0 52px, transparent 52px) top left / 740px 2.5px no-repeat,
+    linear-gradient(180deg, var(--ornament-gold) 0 52px, transparent 52px) top left / 2.5px 440px no-repeat,
+    /* ── Top-left middle ── */
+    linear-gradient(90deg, transparent 0 28px, var(--ornament-gold) 28px 64px, transparent 64px) 28px 28px / 64px 2px no-repeat,
+    linear-gradient(180deg, transparent 0 28px, var(--ornament-gold) 28px 64px, transparent 64px) 28px 28px / 2px 64px no-repeat,
+    /* ── Top-left inner ── */
+    linear-gradient(90deg, transparent 0 48px, var(--ornament-gold) 48px 84px, transparent 84px) 48px 48px / 84px 1.5px no-repeat,
+    linear-gradient(180deg, transparent 0 48px, var(--ornament-gold) 48px 84px, transparent 84px) 48px 48px / 1.5px 84px no-repeat,
 
-    linear-gradient(270deg, var(--ornament-gold) 0 48px, transparent 48px) top right / 86px 2px no-repeat,
-    linear-gradient(180deg, var(--ornament-gold) 0 48px, transparent 48px) top right / 2px 86px no-repeat,
-    linear-gradient(270deg, transparent 0 14px, var(--ornament-gold) 14px 44px, transparent 44px) calc(100% - 84px) 14px / 70px 2px no-repeat,
-    linear-gradient(180deg, transparent 0 14px, var(--ornament-gold) 14px 44px, transparent 44px) calc(100% - 16px) 14px / 2px 70px no-repeat,
-    linear-gradient(270deg, transparent 0 28px, var(--ornament-gold) 28px 58px, transparent 58px) calc(100% - 84px) 28px / 70px 2px no-repeat,
-    linear-gradient(180deg, transparent 0 28px, var(--ornament-gold) 28px 58px, transparent 58px) calc(100% - 30px) 14px / 2px 70px no-repeat,
+    /* ── Top-right outer ── */
+    linear-gradient(270deg, var(--ornament-gold) 0 52px, transparent 52px) top right / 740px 2.5px no-repeat,
+    linear-gradient(180deg, var(--ornament-gold) 0 52px, transparent 52px) top right / 2.5px 440px no-repeat,
+    /* ── Top-right middle ── */
+    linear-gradient(270deg, transparent 0 28px, var(--ornament-gold) 28px 64px, transparent 64px) calc(100% - 28px) 28px / 64px 2px no-repeat,
+    linear-gradient(180deg, transparent 0 28px, var(--ornament-gold) 28px 64px, transparent 64px) calc(100% - 30px) 28px / 2px 64px no-repeat,
+    /* ── Top-right inner ── */
+    linear-gradient(270deg, transparent 0 48px, var(--ornament-gold) 48px 84px, transparent 84px) calc(100% - 48px) 48px / 84px 1.5px no-repeat,
+    linear-gradient(180deg, transparent 0 48px, var(--ornament-gold) 48px 84px, transparent 84px) calc(100% - 49.5px) 48px / 1.5px 84px no-repeat,
 
-    linear-gradient(90deg, var(--ornament-gold) 0 48px, transparent 48px) bottom left / 86px 2px no-repeat,
-    linear-gradient(0deg, var(--ornament-gold) 0 48px, transparent 48px) bottom left / 2px 86px no-repeat,
-    linear-gradient(90deg, transparent 0 14px, var(--ornament-gold) 14px 44px, transparent 44px) 14px calc(100% - 16px) / 70px 2px no-repeat,
-    linear-gradient(0deg, transparent 0 14px, var(--ornament-gold) 14px 44px, transparent 44px) 14px calc(100% - 84px) / 2px 70px no-repeat,
-    linear-gradient(90deg, transparent 0 28px, var(--ornament-gold) 28px 58px, transparent 58px) 14px calc(100% - 30px) / 70px 2px no-repeat,
-    linear-gradient(0deg, transparent 0 28px, var(--ornament-gold) 28px 58px, transparent 58px) 28px calc(100% - 84px) / 2px 70px no-repeat,
+    /* ── Bottom-left outer ── */
+    linear-gradient(90deg, var(--ornament-gold) 0 52px, transparent 52px) bottom left / 740px 2.5px no-repeat,
+    linear-gradient(0deg, var(--ornament-gold) 0 52px, transparent 52px) bottom left / 2.5px 440px no-repeat,
+    /* ── Bottom-left middle ── */
+    linear-gradient(90deg, transparent 0 28px, var(--ornament-gold) 28px 64px, transparent 64px) 28px calc(100% - 30px) / 64px 2px no-repeat,
+    linear-gradient(0deg, transparent 0 28px, var(--ornament-gold) 28px 64px, transparent 64px) 28px calc(100% - 92px) / 2px 64px no-repeat,
+    /* ── Bottom-left inner ── */
+    linear-gradient(90deg, transparent 0 48px, var(--ornament-gold) 48px 84px, transparent 84px) 48px calc(100% - 49.5px) / 84px 1.5px no-repeat,
+    linear-gradient(0deg, transparent 0 48px, var(--ornament-gold) 48px 84px, transparent 84px) 48px calc(100% - 132px) / 1.5px 84px no-repeat,
 
-    linear-gradient(270deg, var(--ornament-gold) 0 48px, transparent 48px) bottom right / 86px 2px no-repeat,
-    linear-gradient(0deg, var(--ornament-gold) 0 48px, transparent 48px) bottom right / 2px 86px no-repeat,
-    linear-gradient(270deg, transparent 0 14px, var(--ornament-gold) 14px 44px, transparent 44px) calc(100% - 84px) calc(100% - 16px) / 70px 2px no-repeat,
-    linear-gradient(0deg, transparent 0 14px, var(--ornament-gold) 14px 44px, transparent 44px) calc(100% - 16px) calc(100% - 84px) / 2px 70px no-repeat,
-    linear-gradient(270deg, transparent 0 28px, var(--ornament-gold) 28px 58px, transparent 58px) calc(100% - 84px) calc(100% - 30px) / 70px 2px no-repeat,
-    linear-gradient(0deg, transparent 0 28px, var(--ornament-gold) 28px 58px, transparent 58px) calc(100% - 30px) calc(100% - 84px) / 2px 70px no-repeat;
+    /* ── Bottom-right outer ── */
+    linear-gradient(270deg, var(--ornament-gold) 0 52px, transparent 52px) bottom right / 740px 2.5px no-repeat,
+    linear-gradient(0deg, var(--ornament-gold) 0 52px, transparent 52px) bottom right / 2.5px 440px no-repeat,
+    /* ── Bottom-right middle ── */
+    linear-gradient(270deg, transparent 0 28px, var(--ornament-gold) 28px 64px, transparent 64px) calc(100% - 28px) calc(100% - 30px) / 64px 2px no-repeat,
+    linear-gradient(0deg, transparent 0 28px, var(--ornament-gold) 28px 64px, transparent 64px) calc(100% - 30px) calc(100% - 92px) / 2px 64px no-repeat,
+    /* ── Bottom-right inner ── */
+    linear-gradient(270deg, transparent 0 48px, var(--ornament-gold) 48px 84px, transparent 84px) calc(100% - 48px) calc(100% - 49.5px) / 84px 1.5px no-repeat,
+    linear-gradient(0deg, transparent 0 48px, var(--ornament-gold) 48px 84px, transparent 84px) calc(100% - 49.5px) calc(100% - 132px) / 1.5px 84px no-repeat;
   filter:
-    drop-shadow(0 0 8px color-mix(in oklch, var(--ornament-gold) 34%, transparent))
-    drop-shadow(0 1px 0 oklch(1 0 0 / 0.28));
-  opacity: 0.86;
+    drop-shadow(0 0 10px color-mix(in oklch, var(--ornament-gold) 40%, transparent))
+    drop-shadow(0 1px 0 oklch(1 0 0 / 0.32));
+  opacity: 0.88;
 }
 
 .treasure-aura,
