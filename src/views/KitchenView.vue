@@ -147,8 +147,8 @@ async function deleteItem(id: number) {
     </ScrollArea>
 
     <Dialog v-model:open="showDialog">
-      <DialogContent class="glass gap-0 rounded-xl p-0 shadow-2xl sm:max-w-[420px]">
-        <DialogHeader class="border-b border-border px-8 py-5">
+      <DialogContent class="glass rounded-xl shadow-2xl sm:max-w-[420px]">
+        <DialogHeader class="pb-2">
           <DialogTitle class="text-lg font-bold">
             {{ editingId ? '编辑美食' : '添加美食' }}
           </DialogTitle>
@@ -157,53 +157,51 @@ async function deleteItem(id: number) {
           </DialogDescription>
         </DialogHeader>
 
-        <div class="space-y-5 px-8 py-6">
-          <div class="flex items-center gap-4 rounded-lg bg-muted/50 p-4">
-            <EmojiPicker :model-value="form.emoji" @select="e => form.emoji = e" />
-            <div class="min-w-0">
-              <div class="text-sm font-semibold text-foreground">选择图标</div>
-              <div class="mt-0.5 text-xs text-muted-foreground">用于抽奖时展示</div>
-            </div>
-          </div>
-
-          <div class="space-y-4">
-            <div class="space-y-2">
-              <Label for="dlg-title">名称</Label>
-              <Input
-                id="dlg-title"
-                v-model="form.title"
-                placeholder="如：兰州拉面"
-              />
-            </div>
-            <div class="space-y-2">
-              <Label for="dlg-desc">描述</Label>
-              <Input
-                id="dlg-desc"
-                v-model="form.description"
-                placeholder="简单描述（可选）"
-              />
-            </div>
-            <div class="space-y-2">
-              <Label for="dlg-dist">距离</Label>
-              <Input
-                id="dlg-dist"
-                v-model="form.distance"
-                placeholder="如 500m（可选）"
-              />
-            </div>
+        <div class="flex items-center gap-4 rounded-lg bg-muted/50 p-4">
+          <EmojiPicker :model-value="form.emoji" @select="e => form.emoji = e" />
+          <div class="min-w-0">
+            <div class="text-sm font-semibold text-foreground">选择图标</div>
+            <div class="mt-0.5 text-xs text-muted-foreground">用于抽奖时展示</div>
           </div>
         </div>
 
-        <DialogFooter class="flex-row justify-end gap-3 border-t border-border px-8 py-5">
+        <div class="space-y-4">
+          <div class="space-y-2">
+            <Label for="dlg-title">名称</Label>
+            <Input
+              id="dlg-title"
+              v-model="form.title"
+              placeholder="如：兰州拉面"
+            />
+          </div>
+          <div class="space-y-2">
+            <Label for="dlg-desc">描述</Label>
+            <Input
+              id="dlg-desc"
+              v-model="form.description"
+              placeholder="简单描述（可选）"
+            />
+          </div>
+          <div class="space-y-2">
+            <Label for="dlg-dist">距离</Label>
+            <Input
+              id="dlg-dist"
+              v-model="form.distance"
+              placeholder="如 500m（可选）"
+            />
+          </div>
+        </div>
+
+        <DialogFooter class="flex-row justify-end gap-3 pt-2">
           <Button
             variant="outline"
-            class="rounded-full"
+            class="rounded-full px-5"
             @click="showDialog = false; resetForm()"
           >
             取消
           </Button>
           <Button
-            class="rounded-full"
+            class="rounded-full px-5"
             :disabled="!form.title.trim()"
             @click="handleSubmit"
           >
