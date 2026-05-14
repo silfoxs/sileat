@@ -103,13 +103,14 @@ async function deleteItem(id: number) {
     </div>
 
     <ScrollArea class="flex-1">
-      <div class="space-y-5 pb-3">
+      <div class="pb-3">
         <Motion
           v-for="(item, index) in foodStore.items"
           :key="item.id"
           :initial="{ opacity: 0, x: -20 }"
           :animate="{ opacity: 1, x: 0 }"
           :transition="{ duration: 0.3, delay: index * 0.04 }"
+          class="mt-4 first:mt-0"
         >
           <Card class="glass rounded-lg border shadow-sm transition-shadow hover:shadow-md">
             <CardContent class="flex items-center gap-4 p-5">
