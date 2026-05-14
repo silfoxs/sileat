@@ -10,7 +10,7 @@ const lotteryStore = useLotteryStore()
 
 const shimmerIndex = ref(0)
 const showConfetti = ref(false)
-const spinPhase = ref<'idle' | 'spinning' | 'reveal' | 'result'>('idle')
+const spinPhase = ref<'idle' | 'spinning' | 'result'>('idle')
 const spinSpeed = ref(60)
 const cardScale = ref(1)
 const glowIntensity = ref(0)
@@ -80,24 +80,15 @@ async function handleSpin() {
 
   await lotteryStore.spin()
 
-  // Phase 2: Reveal flash
-  spinPhase.value = 'reveal'
-  cardScale.value = 1.15
-  glowIntensity.value = 1
+  // Show result directly
+  spinPhase.value = 'result'
+  cardScale.value = 1
+  glowIntensity.value = 0.3
   showConfetti.value = true
 
-  await nextTick()
-
-  // Phase 3: Settle into result
   setTimeout(() => {
-    spinPhase.value = 'result'
-    cardScale.value = 1
-    glowIntensity.value = 0.3
-
-    setTimeout(() => {
-      showConfetti.value = false
-    }, 4000)
-  }, 400)
+    showConfetti.value = false
+  }, 4000)
 }
 </script>
 
@@ -136,8 +127,8 @@ async function handleSpin() {
           class="relative flex min-h-[318px] flex-col items-center justify-center rounded-2xl p-8 transition-transform"
           :style="{
             transform: `scale(${cardScale})`,
-            transitionDuration: spinPhase === 'reveal' ? '300ms' : '100ms',
-            transitionTimingFunction: spinPhase === 'reveal' ? 'cubic-bezier(0.34, 1.56, 0.64, 1)' : 'ease-out',
+            transitionDuration: '100ms',
+            transitionTimingFunction: 'ease-out',
           }"
         >
           <div class="treasure-aura" />
@@ -164,15 +155,6 @@ async function handleSpin() {
                   {{ currentItem?.description }}
                 </p>
               </Motion>
-            </div>
-          </template>
-
-          <!-- Reveal flash -->
-          <template v-else-if="spinPhase === 'reveal' && lotteryStore.result">
-            <div class="relative z-10 flex flex-col items-center">
-              <div class="mb-7 text-[8rem] leading-none drop-shadow-lg">
-                {{ lotteryStore.result.emoji }}
-              </div>
             </div>
           </template>
 
