@@ -103,7 +103,7 @@ async function deleteItem(id: number) {
     </div>
 
     <ScrollArea class="flex-1">
-      <div class="space-y-4 pb-3">
+      <div class="space-y-5 pb-3">
         <Motion
           v-for="(item, index) in foodStore.items"
           :key="item.id"
@@ -112,26 +112,26 @@ async function deleteItem(id: number) {
           :transition="{ duration: 0.3, delay: index * 0.04 }"
         >
           <Card class="glass rounded-lg border shadow-sm transition-shadow hover:shadow-md">
-            <CardContent class="flex items-center gap-3 p-4">
-              <div class="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-lg bg-primary/10 text-2xl">
+            <CardContent class="flex items-center gap-4 p-5">
+              <div class="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-lg bg-primary/10 text-3xl">
                 {{ item.emoji }}
               </div>
               <div class="min-w-0 flex-1">
-                <div class="truncate text-sm font-bold text-foreground">{{ item.title }}</div>
-                <div class="mt-1 flex items-center gap-2">
-                  <span v-if="item.description" class="truncate text-xs text-muted-foreground">{{ item.description }}</span>
+                <div class="truncate text-base font-bold text-foreground">{{ item.title }}</div>
+                <div class="mt-1.5 flex items-center gap-2">
+                  <span v-if="item.description" class="truncate text-sm text-muted-foreground">{{ item.description }}</span>
                 </div>
               </div>
-              <div v-if="item.distance" class="flex flex-shrink-0 items-center gap-1 rounded-full bg-primary/10 px-2 py-1 text-xs font-medium text-primary">
-                <MapPin class="h-3 w-3" />
+              <div v-if="item.distance" class="flex flex-shrink-0 items-center gap-1.5 rounded-full bg-primary/10 px-2.5 py-1.5 text-xs font-medium text-primary">
+                <MapPin class="h-3.5 w-3.5" />
                 {{ item.distance }}
               </div>
               <div class="flex flex-shrink-0 items-center gap-1">
                 <Button variant="ghost" size="icon-sm" @click="editItem(item)">
-                  <Pencil class="h-3.5 w-3.5" />
+                  <Pencil class="h-4 w-4" />
                 </Button>
                 <Button variant="ghost" size="icon-sm" class="hover:text-destructive" @click="deleteItem(item.id)">
-                  <Trash2 class="h-3.5 w-3.5" />
+                  <Trash2 class="h-4 w-4" />
                 </Button>
               </div>
             </CardContent>
