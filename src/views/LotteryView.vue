@@ -39,6 +39,12 @@ function updateShimmerItems() {
 }
 
 async function handleSpin() {
+  if (spinPhase.value === 'result') {
+    spinPhase.value = 'idle'
+    lotteryStore.reset()
+    glowIntensity.value = 0
+    return
+  }
   if (spinPhase.value !== 'idle' || foodStore.items.length === 0) return
 
   showConfetti.value = false
@@ -99,12 +105,6 @@ async function handleSpin() {
     }, 4000)
   }, 400)
 }
-
-function handleReset() {
-  spinPhase.value = 'idle'
-  lotteryStore.reset()
-  glowIntensity.value = 0
-}
 </script>
 
 <template>
@@ -152,13 +152,7 @@ function handleReset() {
 
           <!-- Spinning state -->
           <template v-if="spinPhase === 'spinning'">
-            <div
-              class="relative z-10 flex flex-col items-center"
-              :style="{
-                filter: `blur(${Math.max(0, (spinSpeed - 80) * 0.02)}px)`,
-                opacity: 1 - (spinSpeed - 80) * 0.001,
-              }"
-            >
+            <div class="relative z-10 flex flex-col items-center">
               <Motion
                 :key="shimmerIndex"
                 :initial="{ opacity: 0.4, scale: 0.85, y: 10 }"
@@ -176,10 +170,6 @@ function handleReset() {
                   {{ currentItem?.description }}
                 </p>
               </Motion>
-              <div class="flex items-center gap-2 rounded-full bg-primary/15 px-3 py-1.5 text-primary">
-                <div class="h-1.5 w-1.5 animate-ping rounded-full bg-primary" />
-                <span class="text-xs font-semibold">抽取中...</span>
-              </div>
             </div>
           </template>
 
@@ -211,12 +201,6 @@ function handleReset() {
                 <MapPin class="h-3.5 w-3.5" />
                 <span class="text-sm font-medium">{{ lotteryStore.result.distance }}</span>
               </div>
-              <button
-                class="mt-5 rounded-full bg-secondary/80 px-5 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
-                @click.stop="handleReset"
-              >
-                再来一次
-              </button>
             </Motion>
           </template>
 
