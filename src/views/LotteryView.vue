@@ -25,7 +25,7 @@ onMounted(async () => {
 })
 
 function updateShimmerItems() {
-  const items = foodStore.items.map(i => ({ emoji: i.emoji, title: i.title, description: i.description || '' }))
+  const items = foodStore.items.filter(i => !i.skip_today).map(i => ({ emoji: i.emoji, title: i.title, description: i.description || '' }))
   shimmerItems.value = items.length > 0
     ? [...items, ...items, ...items].slice(0, 12)
     : [

@@ -10,7 +10,7 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { DialogRoot, DialogPortal, DialogOverlay, DialogContent, DialogTitle, DialogDescription, DialogClose } from 'reka-ui'
 import EmojiPicker from '../components/EmojiPicker.vue'
 import type { FoodFormData } from '../types/food'
-import { Plus, Pencil, Trash2, MapPin, ChefHat, X } from 'lucide-vue-next'
+import { Plus, Pencil, Trash2, MapPin, ChefHat, X, Ban, Check } from 'lucide-vue-next'
 
 const foodStore = useFoodStore()
 
@@ -101,7 +101,8 @@ async function deleteItem(id: number) {
         <Card
           v-for="item in foodStore.items"
           :key="item.id"
-          class="glass group rounded-lg border shadow-sm transition-all hover:shadow-md"
+          class="glass group overflow-hidden rounded-lg border shadow-sm transition-all hover:shadow-md"
+          :class="item.skip_today ? 'border-l-2 border-l-red-400/70' : 'border-l-2 border-l-green-400/70'"
         >
           <CardContent class="flex items-center gap-4 p-5">
             <div class="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-lg bg-primary/10 text-3xl">
@@ -115,13 +116,24 @@ async function deleteItem(id: number) {
               <MapPin class="h-3.5 w-3.5" />
               {{ item.distance }}
             </div>
-            <div class="flex flex-shrink-0 items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
-              <Button variant="ghost" size="icon-sm" @click="editItem(item)">
-                <Pencil class="h-4 w-4" />
+            <div class="flex flex-shrink-0 items-center gap-1">
+              <Button
+                variant="ghost"
+                size="icon-sm"
+                :class="item.skip_today ? 'text-red-400' : 'text-muted-foreground'"
+                @click="foodStore.toggleSkipToday(item.id)"
+              >
+                <Ban v-if="!item.skip_today" class="h-4 w-4" />
+                <Check v-else class="h-4 w-4" />
               </Button>
-              <Button variant="ghost" size="icon-sm" class="hover:text-destructive" @click="deleteItem(item.id)">
-                <Trash2 class="h-4 w-4" />
-              </Button>
+              <div class="flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+                <Button variant="ghost" size="icon-sm" @click="editItem(item)">
+                  <Pencil class="h-4 w-4" />
+                </Button>
+                <Button variant="ghost" size="icon-sm" class="hover:text-destructive" @click="deleteItem(item.id)">
+                  <Trash2 class="h-4 w-4" />
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>

@@ -43,5 +43,13 @@ export const useFoodStore = defineStore('food', () => {
     await loadAll()
   }
 
-  return { items, loading, loadAll, add, update, remove }
+  async function toggleSkipToday(id: number) {
+    const item = items.value.find(i => i.id === id)
+    if (!item) return
+    const db = await useDatabase()
+    await db.execute('UPDATE food_items SET skip_today = $1 WHERE id = $2', [item.skip_today ? 0 : 1, id])
+    await loadAll()
+  }
+
+  return { items, loading, loadAll, add, update, remove, toggleSkipToday }
 })

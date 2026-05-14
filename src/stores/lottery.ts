@@ -12,7 +12,8 @@ export const useLotteryStore = defineStore('lottery', () => {
 
   async function spin() {
     const foodStore = useFoodStore()
-    if (foodStore.items.length === 0) return
+    const available = foodStore.items.filter(i => !i.skip_today)
+    if (available.length === 0) return
 
     isSpinning.value = true
     showResult.value = false
@@ -21,7 +22,7 @@ export const useLotteryStore = defineStore('lottery', () => {
     // Simulate spinning delay
     await new Promise(resolve => setTimeout(resolve, 2000))
 
-    result.value = weightedRandom(foodStore.items)
+    result.value = weightedRandom(available)
     isSpinning.value = false
     showResult.value = true
   }

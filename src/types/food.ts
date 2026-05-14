@@ -5,6 +5,7 @@ export interface FoodItem {
   description: string;
   distance: string;
   weight: number;
+  skip_today: number;
   created_at: string;
 }
 
