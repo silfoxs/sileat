@@ -68,7 +68,7 @@ async function deleteItem(id: number) {
 </script>
 
 <template>
-  <div class="page-shell flex flex-col overflow-visible pb-0">
+  <div class="page-shell flex flex-col pb-0">
     <Motion
       :initial="{ opacity: 0, y: -15 }"
       :animate="{ opacity: 1, y: 0 }"
@@ -95,8 +95,8 @@ async function deleteItem(id: number) {
       </Button>
     </div>
 
-    <div class="flex-1 overflow-y-auto scrollbar-hidden">
-      <div class="flex flex-col gap-3 pb-28">
+    <div class="min-h-0 flex-1 overflow-y-auto scrollbar-hidden">
+      <div class="flex flex-col gap-3 pb-36">
         <Card
           v-for="item in foodStore.items"
           :key="item.id"

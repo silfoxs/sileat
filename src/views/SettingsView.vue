@@ -29,7 +29,7 @@ const themeIcon = computed(() => settings.theme === 'dark' ? Moon : Sun)
     </Motion>
 
     <div class="flex-1 overflow-y-auto scrollbar-hidden">
-      <div class="space-y-4 pb-3">
+      <div class="space-y-4 pb-24">
 
         <Motion
           :initial="{ opacity: 0, y: 15 }"
