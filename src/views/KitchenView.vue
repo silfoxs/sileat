@@ -148,7 +148,7 @@ async function deleteItem(id: number) {
 
     <Dialog v-model:open="showDialog">
       <DialogContent class="glass gap-0 rounded-xl p-0 shadow-2xl sm:max-w-[420px]">
-        <DialogHeader class="border-b border-border px-10 py-5">
+        <DialogHeader class="border-b border-border px-8 py-5">
           <DialogTitle class="text-lg font-bold">
             {{ editingId ? '编辑美食' : '添加美食' }}
           </DialogTitle>
@@ -157,7 +157,7 @@ async function deleteItem(id: number) {
           </DialogDescription>
         </DialogHeader>
 
-        <div class="space-y-5 px-10 py-6">
+        <div class="space-y-5 px-8 py-6">
           <div class="flex items-center gap-4 rounded-lg bg-muted/50 p-4">
             <EmojiPicker :model-value="form.emoji" @select="e => form.emoji = e" />
             <div class="min-w-0">
@@ -194,7 +194,7 @@ async function deleteItem(id: number) {
           </div>
         </div>
 
-        <DialogFooter class="border-t border-border px-10 py-5 sm:gap-3">
+        <DialogFooter class="flex-row justify-end gap-3 border-t border-border px-8 py-5">
           <Button
             variant="outline"
             class="rounded-full"
