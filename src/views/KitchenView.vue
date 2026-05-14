@@ -101,9 +101,12 @@ async function deleteItem(id: number) {
         <Card
           v-for="item in foodStore.items"
           :key="item.id"
-          class="glass group overflow-hidden rounded-lg border shadow-sm transition-all hover:shadow-md"
-          :class="item.skip_today ? 'border-l-2 border-l-red-400/70' : 'border-l-2 border-l-green-400/70'"
+          class="glass group relative overflow-hidden rounded-lg border transition-all hover:shadow-md"
         >
+          <div
+            class="absolute left-0 top-0 h-full w-[3px]"
+            :class="item.skip_today ? 'bg-red-400/70' : 'bg-green-400/70'"
+          />
           <CardContent class="flex items-center gap-4 p-5">
             <div class="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-lg bg-primary/10 text-3xl">
               {{ item.emoji }}
