@@ -3,6 +3,7 @@ import { computed } from 'vue'
 import { useSettingsStore } from '../stores/settings'
 import { Toggle } from '@/components/ui/toggle'
 import { cn } from '@/lib/utils'
+import { Moon, Sun } from 'lucide-vue-next'
 
 const settings = useSettingsStore()
 
@@ -26,7 +27,8 @@ const isDark = computed({
       class="absolute top-0.5 flex h-6 w-6 items-center justify-center rounded-full bg-white text-xs shadow-md transition-all duration-300"
       :class="settings.theme === 'dark' ? 'left-7' : 'left-0.5'"
     >
-      {{ settings.theme === 'dark' ? '🌙' : '☀️' }}
+      <Moon v-if="settings.theme === 'dark'" class="h-3.5 w-3.5 text-primary" />
+      <Sun v-else class="h-3.5 w-3.5 text-primary" />
     </div>
   </Toggle>
 </template>

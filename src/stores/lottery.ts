@@ -10,9 +10,9 @@ export const useLotteryStore = defineStore('lottery', () => {
   const isSpinning = ref(false)
   const showResult = ref(false)
 
-  function spin() {
+  function spin(candidates?: FoodItem[]) {
     const foodStore = useFoodStore()
-    const available = foodStore.items.filter(i => !i.skip_today)
+    const available = (candidates ?? foodStore.items).filter(i => !i.skip_today)
     if (available.length === 0) return
 
     isSpinning.value = true

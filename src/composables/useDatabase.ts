@@ -10,6 +10,7 @@ CREATE TABLE IF NOT EXISTS food_items (
   emoji      TEXT NOT NULL DEFAULT '🍜',
   description TEXT DEFAULT '',
   distance   TEXT DEFAULT '',
+  tags       TEXT NOT NULL DEFAULT '[]',
   weight     INTEGER NOT NULL DEFAULT 1,
   skip_today INTEGER NOT NULL DEFAULT 0,
   created_at DATETIME DEFAULT CURRENT_TIMESTAMP
@@ -21,8 +22,12 @@ CREATE TABLE IF NOT EXISTS settings (
 );
 `
 
-const MIGRATE_SQL = `
+const MIGRATE_SKIP_TODAY_SQL = `
 ALTER TABLE food_items ADD COLUMN skip_today INTEGER NOT NULL DEFAULT 0;
+`
+
+const MIGRATE_TAGS_SQL = `
+ALTER TABLE food_items ADD COLUMN tags TEXT NOT NULL DEFAULT '[]';
 `
 
 export async function useDatabase() {
@@ -30,10 +35,12 @@ export async function useDatabase() {
     dbPromise ??= (async () => {
       const database = await Database.load('sqlite:sileat.db')
       await database.execute(INIT_SQL)
-      try {
-        await database.execute(MIGRATE_SQL)
-      } catch {
-        // column already exists
+      for (const sql of [MIGRATE_SKIP_TODAY_SQL, MIGRATE_TAGS_SQL]) {
+        try {
+          await database.execute(sql)
+        } catch {
+          // column already exists
+        }
       }
       db = database
       return database

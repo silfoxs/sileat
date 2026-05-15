@@ -4,6 +4,7 @@ export interface FoodItem {
   emoji: string;
   description: string;
   distance: string;
+  tags: string[];
   weight: number;
   skip_today: number;
   created_at: string;
@@ -14,4 +15,5 @@ export interface FoodFormData {
   emoji: string;
   description: string;
   distance: string;
+  tags: string[];
 }

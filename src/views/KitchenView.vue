@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, reactive, onMounted } from 'vue'
+import { computed, ref, reactive, onMounted } from 'vue'
 import { Motion } from 'motion-v'
 import { useFoodStore } from '../stores/food'
 import { Button } from '@/components/ui/button'
@@ -8,8 +8,8 @@ import { Label } from '@/components/ui/label'
 import { Card } from '@/components/ui/card'
 import { DialogRoot, DialogPortal, DialogOverlay, DialogContent, DialogTitle, DialogDescription, DialogClose } from 'reka-ui'
 import EmojiPicker from '../components/EmojiPicker.vue'
-import type { FoodFormData } from '../types/food'
-import { Plus, Trash2, MapPin, ChefHat, X, Ban, Check } from 'lucide-vue-next'
+import type { FoodFormData, FoodItem } from '../types/food'
+import { Plus, Trash2, MapPin, ChefHat, X, Ban, Check, Tag } from 'lucide-vue-next'
 
 const foodStore = useFoodStore()
 
@@ -18,10 +18,14 @@ const form = reactive<FoodFormData>({
   emoji: '🍜',
   description: '',
   distance: '',
+  tags: [],
 })
 
 const editingId = ref<number | null>(null)
 const showDialog = ref(false)
+const newTag = ref('')
+
+const availableTagOptions = computed(() => foodStore.allTags.filter(tag => !form.tags.includes(tag)))
 
 onMounted(() => {
   foodStore.loadAll()
@@ -32,6 +36,8 @@ function resetForm() {
   form.emoji = '🍜'
   form.description = ''
   form.distance = ''
+  form.tags = []
+  newTag.value = ''
   editingId.value = null
 }
 
@@ -40,17 +46,35 @@ function openAddDialog() {
   showDialog.value = true
 }
 
-function editItem(item: { id: number; title: string; emoji: string; description: string; distance: string }) {
+function editItem(item: FoodItem) {
   editingId.value = item.id
   form.title = item.title
   form.emoji = item.emoji
   form.description = item.description
   form.distance = item.distance
+  form.tags = [...item.tags]
+  newTag.value = ''
   showDialog.value = true
+}
+
+function addTag(tag = newTag.value) {
+  const normalized = tag.trim()
+  if (!normalized || form.tags.includes(normalized)) {
+    newTag.value = ''
+    return
+  }
+
+  form.tags.push(normalized)
+  newTag.value = ''
+}
+
+function removeTag(tag: string) {
+  form.tags = form.tags.filter(item => item !== tag)
 }
 
 async function handleSubmit() {
   if (!form.title.trim()) return
+  addTag()
 
   if (editingId.value) {
     await foodStore.update(editingId.value, { ...form })
@@ -120,6 +144,16 @@ async function deleteItem(id: number) {
                 </span>
               </div>
               <p v-if="item.description" class="mt-0.5 line-clamp-2 text-sm text-muted-foreground">{{ item.description }}</p>
+              <div v-if="item.tags.length" class="mt-2 flex flex-wrap gap-1.5">
+                <span
+                  v-for="tag in item.tags"
+                  :key="tag"
+                  class="inline-flex items-center gap-1 rounded-full bg-secondary/70 px-2 py-0.5 text-xs font-medium text-muted-foreground"
+                >
+                  <Tag class="h-3 w-3" />
+                  {{ tag }}
+                </span>
+              </div>
             </div>
             <div class="flex flex-shrink-0 items-center gap-1">
               <Button
@@ -193,6 +227,43 @@ async function deleteItem(id: number) {
             <div class="space-y-2">
               <Label for="dlg-dist">距离</Label>
               <Input id="dlg-dist" v-model="form.distance" placeholder="如 500m（可选）" />
+            </div>
+            <div class="space-y-2">
+              <Label for="dlg-tag">标签</Label>
+              <div class="flex gap-2">
+                <Input
+                  id="dlg-tag"
+                  v-model="newTag"
+                  placeholder="如：清淡、快餐、聚餐"
+                  @keydown.enter.prevent="addTag()"
+                />
+                <Button type="button" variant="outline" size="icon" class="rounded-lg" @click="addTag()">
+                  <Plus class="h-4 w-4" />
+                </Button>
+              </div>
+              <div v-if="form.tags.length" class="flex flex-wrap gap-2 pt-1">
+                <button
+                  v-for="tag in form.tags"
+                  :key="tag"
+                  type="button"
+                  class="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2.5 py-1 text-xs font-semibold text-primary"
+                  @click="removeTag(tag)"
+                >
+                  {{ tag }}
+                  <X class="h-3 w-3" />
+                </button>
+              </div>
+              <div v-if="availableTagOptions.length" class="flex flex-wrap gap-2 pt-1">
+                <button
+                  v-for="tag in availableTagOptions"
+                  :key="tag"
+                  type="button"
+                  class="rounded-full bg-secondary/70 px-2.5 py-1 text-xs font-medium text-muted-foreground transition-colors hover:bg-secondary"
+                  @click="addTag(tag)"
+                >
+                  {{ tag }}
+                </button>
+              </div>
             </div>
           </div>
 

@@ -3,7 +3,9 @@ import { ref, onMounted, computed, nextTick } from 'vue'
 import { Motion } from 'motion-v'
 import { useFoodStore } from '../stores/food'
 import { useLotteryStore } from '../stores/lottery'
-import { UtensilsCrossed, MapPin } from 'lucide-vue-next'
+import { Button } from '@/components/ui/button'
+import { DialogRoot, DialogPortal, DialogOverlay, DialogContent, DialogTitle, DialogDescription, DialogClose } from 'reka-ui'
+import { UtensilsCrossed, MapPin, Check, Tags, X } from 'lucide-vue-next'
 
 const foodStore = useFoodStore()
 const lotteryStore = useLotteryStore()
@@ -14,6 +16,8 @@ const spinPhase = ref<'idle' | 'spinning' | 'result'>('idle')
 const spinSpeed = ref(60)
 const cardScale = ref(1)
 const glowIntensity = ref(0)
+const selectedTag = ref<string | null>(null)
+const showTagDialog = ref(false)
 
 const fallbackShimmerItems = [
   { emoji: '🍜', title: '兰州拉面', description: '一碗热腾腾的牛肉面' },
@@ -23,7 +27,15 @@ const fallbackShimmerItems = [
 
 const shimmerItems = ref<{ emoji: string; title: string; description: string }[]>(fallbackShimmerItems)
 
-const availableCount = computed(() => foodStore.items.filter(i => !i.skip_today).length)
+const selectedTagName = computed(() => selectedTag.value ?? '全部')
+
+const filteredItems = computed(() => foodStore.items.filter(item => {
+  if (item.skip_today) return false
+  if (!selectedTag.value) return true
+  return item.tags.includes(selectedTag.value)
+}))
+
+const availableCount = computed(() => filteredItems.value.length)
 
 const currentItem = computed(() => {
   if (spinPhase.value === 'spinning') return shimmerItems.value[shimmerIndex.value] || { emoji: '🍜', title: '加载中...', description: '' }
@@ -36,8 +48,21 @@ onMounted(() => {
 })
 
 function updateShimmerItems() {
-  const items = foodStore.items.filter(i => !i.skip_today).map(i => ({ emoji: i.emoji, title: i.title, description: i.description || '' }))
+  const items = filteredItems.value.map(i => ({ emoji: i.emoji, title: i.title, description: i.description || '' }))
   shimmerItems.value = items.length > 0 ? [...items, ...items, ...items].slice(0, 12) : fallbackShimmerItems
+}
+
+function getTagCount(tag: string | null) {
+  return foodStore.items.filter(item => !item.skip_today && (!tag || item.tags.includes(tag))).length
+}
+
+function selectTag(tag: string | null) {
+  selectedTag.value = tag
+  showTagDialog.value = false
+  spinPhase.value = 'idle'
+  showConfetti.value = false
+  lotteryStore.reset()
+  updateShimmerItems()
 }
 
 function runSpinAnimation() {
@@ -85,7 +110,7 @@ async function handleSpin() {
   await nextTick()
   const animation = runSpinAnimation()
 
-  lotteryStore.spin()
+  lotteryStore.spin(filteredItems.value)
   await animation
 
   // Show result directly
@@ -205,10 +230,70 @@ async function handleSpin() {
         </div>
       </div>
 
-      <p class="relative z-10 mt-8 rounded-full bg-secondary/70 px-3 py-1 text-xs font-medium text-muted-foreground">
-        {{ availableCount > 0 ? `${availableCount} 个选项等待翻牌` : '' }}
-      </p>
+      <button
+        type="button"
+        class="relative z-10 mt-8 inline-flex items-center gap-1.5 rounded-full bg-secondary/70 px-3 py-1 text-xs font-medium text-muted-foreground transition-colors hover:bg-secondary"
+        @click="showTagDialog = true"
+      >
+        <Tags class="h-3.5 w-3.5" />
+        {{ availableCount > 0 ? `${selectedTagName}有 ${availableCount}份惊喜哦` : `${selectedTagName}暂无惊喜` }}
+      </button>
     </div>
+
+    <DialogRoot v-model:open="showTagDialog">
+      <DialogPortal>
+        <DialogOverlay class="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm" />
+        <DialogContent class="glass fixed left-1/2 top-1/2 z-50 w-[calc(100%-3rem)] max-w-[390px] -translate-x-1/2 -translate-y-1/2 rounded-xl p-7 shadow-2xl">
+          <DialogTitle class="text-lg font-bold">选择标签</DialogTitle>
+          <DialogDescription class="mt-1 text-sm text-muted-foreground">
+            只从对应标签里抽一个今天的惊喜
+          </DialogDescription>
+
+          <div class="mt-5 flex flex-col gap-2">
+            <button
+              type="button"
+              class="flex w-full items-center justify-between rounded-lg border px-4 py-3 text-left transition-colors hover:bg-secondary/70"
+              :class="!selectedTag ? 'border-primary bg-primary/10 text-primary' : 'border-border bg-card/35 text-foreground'"
+              @click="selectTag(null)"
+            >
+              <span class="font-semibold">全部</span>
+              <span class="inline-flex items-center gap-2 text-xs text-muted-foreground">
+                {{ getTagCount(null) }}份
+                <Check v-if="!selectedTag" class="h-4 w-4 text-primary" />
+              </span>
+            </button>
+
+            <button
+              v-for="tag in foodStore.allTags"
+              :key="tag"
+              type="button"
+              class="flex w-full items-center justify-between rounded-lg border px-4 py-3 text-left transition-colors hover:bg-secondary/70"
+              :class="selectedTag === tag ? 'border-primary bg-primary/10 text-primary' : 'border-border bg-card/35 text-foreground'"
+              @click="selectTag(tag)"
+            >
+              <span class="font-semibold">{{ tag }}</span>
+              <span class="inline-flex items-center gap-2 text-xs text-muted-foreground">
+                {{ getTagCount(tag) }}份
+                <Check v-if="selectedTag === tag" class="h-4 w-4 text-primary" />
+              </span>
+            </button>
+          </div>
+
+          <div class="mt-6 flex justify-end">
+            <DialogClose as-child>
+              <Button variant="outline" class="rounded-full px-5">
+                取消
+              </Button>
+            </DialogClose>
+          </div>
+
+          <DialogClose class="absolute right-4 top-4 rounded-sm opacity-70 transition-opacity hover:opacity-100">
+            <X class="h-4 w-4" />
+            <span class="sr-only">关闭</span>
+          </DialogClose>
+        </DialogContent>
+      </DialogPortal>
+    </DialogRoot>
 
     <!-- Confetti -->
     <div v-if="showConfetti" class="fixed inset-0 pointer-events-none z-40 overflow-hidden">

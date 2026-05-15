@@ -14,13 +14,16 @@ const menus = [
   { name: 'settings', label: '设置', icon: Settings },
 ]
 
+const itemWidth = 72
+const itemGap = 6
+
 const activeIndex = computed(() => {
   const index = menus.findIndex(menu => menu.name === currentRoute.value)
   return index >= 0 ? index : 0
 })
 
 const indicatorStyle = computed(() => ({
-  transform: `translateX(${activeIndex.value * 72}px)`,
+  transform: `translateX(${activeIndex.value * (itemWidth + itemGap)}px)`,
 }))
 
 function navigate(name: string) {
