@@ -13,11 +13,13 @@ const lotteryStore = useLotteryStore()
 const shimmerIndex = ref(0)
 const showConfetti = ref(false)
 const spinPhase = ref<'idle' | 'spinning' | 'result'>('idle')
+const rippleState = ref<'off' | 'spinning' | 'collapse'>('off')
 const spinSpeed = ref(60)
 const cardScale = ref(1)
 const glowIntensity = ref(0)
 const selectedTag = ref<string | null>(null)
 const showTagDialog = ref(false)
+let rippleTimer: ReturnType<typeof setTimeout> | null = null
 
 const fallbackShimmerItems = [
   { emoji: '🍜', title: '兰州拉面', description: '一碗热腾腾的牛肉面' },
@@ -28,6 +30,7 @@ const fallbackShimmerItems = [
 const shimmerItems = ref<{ emoji: string; title: string; description: string }[]>(fallbackShimmerItems)
 
 const selectedTagName = computed(() => selectedTag.value ?? '全部')
+const showGoldenRipples = computed(() => rippleState.value !== 'off')
 
 const filteredItems = computed(() => foodStore.items.filter(item => {
   if (item.skip_today) return false
@@ -59,9 +62,18 @@ function selectTag(tag: string | null) {
   selectedTag.value = tag
   showTagDialog.value = false
   spinPhase.value = 'idle'
+  stopGoldenRipples()
   showConfetti.value = false
   lotteryStore.reset()
   updateShimmerItems()
+}
+
+function stopGoldenRipples() {
+  if (rippleTimer) {
+    clearTimeout(rippleTimer)
+    rippleTimer = null
+  }
+  rippleState.value = 'off'
 }
 
 async function openTagDialog() {
@@ -122,6 +134,11 @@ async function handleSpin() {
   updateShimmerItems()
   showConfetti.value = false
   spinPhase.value = 'spinning'
+  if (rippleTimer) {
+    clearTimeout(rippleTimer)
+    rippleTimer = null
+  }
+  rippleState.value = 'spinning'
   spinSpeed.value = 50
   glowIntensity.value = 0
   let resultReady = false
@@ -156,6 +173,7 @@ async function handleSpin() {
 
   if (!hasCandidates || !lotteryStore.result) {
     spinPhase.value = 'idle'
+    stopGoldenRipples()
     cardScale.value = 1
     glowIntensity.value = 0
     return
@@ -163,6 +181,11 @@ async function handleSpin() {
 
   // Show result directly
   spinPhase.value = 'result'
+  rippleState.value = 'collapse'
+  rippleTimer = setTimeout(() => {
+    rippleState.value = 'off'
+    rippleTimer = null
+  }, 900)
   cardScale.value = 1
   glowIntensity.value = 0.3
   showConfetti.value = true
@@ -175,6 +198,15 @@ async function handleSpin() {
 
 <template>
   <div class="page-shell flex flex-col items-center">
+    <div
+      v-if="showGoldenRipples"
+      class="app-golden-ripples"
+      :class="{ 'app-golden-ripples--collapse': rippleState === 'collapse' }"
+      aria-hidden="true"
+    >
+      <span v-for="i in 6" :key="i" class="golden-ripple" />
+    </div>
+
     <span class="emoji-prewarm" aria-hidden="true">
       {{ fallbackShimmerItems.map(item => item.emoji).join('') }}
     </span>
@@ -381,12 +413,120 @@ async function handleSpin() {
   will-change: transform;
 }
 
+.app-golden-ripples {
+  position: fixed;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  overflow: visible;
+}
+
+.golden-ripple {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: min(118vmax, 1320px);
+  aspect-ratio: 1;
+  border-radius: 999px;
+  border: 2px solid color-mix(in oklch, var(--ornament-gold) 86%, white 18%);
+  background:
+    radial-gradient(circle, transparent 59%, color-mix(in oklch, var(--ornament-gold) 36%, transparent) 61%, transparent 70%);
+  box-shadow:
+    0 0 34px color-mix(in oklch, var(--ornament-gold) 58%, transparent),
+    0 0 76px color-mix(in oklch, var(--ornament-gold) 24%, transparent),
+    inset 0 0 34px color-mix(in oklch, var(--ornament-gold) 28%, transparent);
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0.12);
+  animation: golden-ripple 3.6s ease-in-out infinite;
+}
+
+.golden-ripple:nth-child(2) {
+  animation-delay: 0.48s;
+}
+
+.golden-ripple:nth-child(3) {
+  animation-delay: 0.96s;
+}
+
+.golden-ripple:nth-child(4) {
+  animation-delay: 1.44s;
+}
+
+.golden-ripple:nth-child(5) {
+  animation-delay: 1.92s;
+}
+
+.golden-ripple:nth-child(6) {
+  animation-delay: 2.4s;
+}
+
+.app-golden-ripples--collapse .golden-ripple {
+  animation: golden-ripple-collapse 1.15s cubic-bezier(0.36, 0, 0.2, 1) both;
+}
+
+.app-golden-ripples--collapse .golden-ripple:nth-child(2) {
+  animation-delay: 0.04s;
+}
+
+.app-golden-ripples--collapse .golden-ripple:nth-child(3) {
+  animation-delay: 0.08s;
+}
+
+.app-golden-ripples--collapse .golden-ripple:nth-child(4) {
+  animation-delay: 0.12s;
+}
+
+.app-golden-ripples--collapse .golden-ripple:nth-child(5) {
+  animation-delay: 0.16s;
+}
+
+.app-golden-ripples--collapse .golden-ripple:nth-child(6) {
+  animation-delay: 0.2s;
+}
+
 .confetti-piece {
   width: var(--size);
   height: var(--size);
   background: oklch(0.75 0.18 var(--hue));
   border-radius: 2px;
   animation: confetti-fall var(--duration) cubic-bezier(0.25, 0.46, 0.45, 0.94) var(--delay) forwards;
+}
+
+@keyframes golden-ripple {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.08);
+  }
+  20% {
+    opacity: 0.82;
+  }
+  48% {
+    opacity: 0.46;
+    transform: translate(-50%, -50%) scale(0.88);
+  }
+  72% {
+    opacity: 0.7;
+    transform: translate(-50%, -50%) scale(0.64);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(1.08);
+  }
+}
+
+@keyframes golden-ripple-collapse {
+  0% {
+    opacity: 0.92;
+    transform: translate(-50%, -50%) scale(1.1);
+  }
+  58% {
+    opacity: 0.88;
+    transform: translate(-50%, -50%) scale(0.28);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.04);
+  }
 }
 
 .confetti-piece:nth-child(odd) {
