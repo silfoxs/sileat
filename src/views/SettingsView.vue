@@ -3,7 +3,7 @@ import { Motion } from 'motion-v'
 import { useSettingsStore } from '../stores/settings'
 import { Card, CardContent } from '@/components/ui/card'
 import ThemeToggle from '../components/ThemeToggle.vue'
-import { Settings, Moon, Sun, Info, Database } from 'lucide-vue-next'
+import { Settings, Moon, Sun, Database } from 'lucide-vue-next'
 import { computed } from 'vue'
 
 const settings = useSettingsStore()
@@ -63,8 +63,8 @@ const themeIcon = computed(() => settings.theme === 'dark' ? Moon : Sun)
           <div class="section-label mb-2">关于</div>
           <Card class="glass rounded-lg border py-0 shadow-sm">
             <CardContent class="flex flex-col items-center py-6 text-center">
-              <div class="mb-3 flex h-12 w-12 items-center justify-center rounded-lg bg-primary/10">
-                <Info class="h-6 w-6 text-primary" />
+              <div class="mb-4 flex h-20 w-20 items-center justify-center rounded-2xl bg-primary/10 p-2 shadow-inner">
+                <img src="/icon.png" alt="App logo" class="h-full w-full rounded-xl object-cover" />
               </div>
               <div class="text-base font-extrabold text-foreground">{{ settings.appName }}</div>
               <div class="mt-1.5 rounded-full bg-secondary px-2.5 py-1 text-xs text-muted-foreground">v{{ settings.appVersion }}</div>
