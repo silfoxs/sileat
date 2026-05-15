@@ -1,0 +1,70 @@
+name: Build macOS App
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-macos-app:
+    name: Build macOS app
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+          run_install: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Rust build
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri -> target
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build macOS app
+        run: pnpm tauri build --bundles app
+
+      - name: Package app artifact
+        run: |
+          mkdir -p artifacts
+          APP_PATH="$(find src-tauri/target/release/bundle/macos -maxdepth 1 -name '*.app' -type d | head -n 1)"
+
+          if [ -z "$APP_PATH" ]; then
+            echo "No .app bundle found"
+            exit 1
+          fi
+
+          ditto -c -k --keepParent "$APP_PATH" artifacts/sileat-macos-app.zip
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_TAG: macos-app-${{ github.run_number }}-${{ github.run_attempt }}
+        run: |
+          SHORT_SHA="$(git rev-parse --short HEAD)"
+
+          gh release create "$RELEASE_TAG" \
+            artifacts/sileat-macos-app.zip \
+            --target "$GITHUB_SHA" \
+            --title "今天吃什么 macOS App ${SHORT_SHA}" \
+            --notes "Automated macOS app build for commit ${GITHUB_SHA}."
