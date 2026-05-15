@@ -115,6 +115,7 @@
 html, body, #app {
   height: 100%;
   overflow: hidden;
+  background: transparent;
 }
 
 body {
@@ -160,7 +161,7 @@ body {
 
 .app-root {
   height: 100%;
-  border-radius: 12px;
+  border-radius: 0;
   overflow: hidden;
   position: relative;
   isolation: isolate;
@@ -253,7 +254,7 @@ body {
 
 .app-frame {
   inset: 0;
-  border-radius: 0;
+  border-radius: inherit;
   background:
     linear-gradient(90deg, color-mix(in oklch, var(--primary) 9%, transparent) 1px, transparent 1px),
     linear-gradient(0deg, color-mix(in oklch, var(--primary) 7%, transparent) 1px, transparent 1px),
@@ -279,7 +280,7 @@ body {
   content: "";
   position: absolute;
   inset: 12px;
-  border-radius: 12px;
+  border-radius: 0;
   border: 1px solid color-mix(in oklch, var(--primary) 22%, transparent);
   box-shadow: inset 0 0 54px color-mix(in oklch, var(--primary) 8%, transparent);
 }

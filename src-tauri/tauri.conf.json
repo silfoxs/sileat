@@ -17,7 +17,7 @@
         "width": 480,
         "height": 720,
         "resizable": true,
-        "transparent": true,
+        "transparent": false,
         "decorations": false,
         "center": true
       }

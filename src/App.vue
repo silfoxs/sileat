@@ -5,7 +5,7 @@ import { getCurrentWindow } from '@tauri-apps/api/window'
 import { useRoute } from 'vue-router'
 
 const route = useRoute()
-const showOrnaments = computed(() => route.name === 'lottery')
+const showLotteryBackground = computed(() => route.name === 'lottery')
 
 function closeApp() {
   getCurrentWindow().close()
@@ -16,9 +16,11 @@ function closeApp() {
   <div class="app-root">
     <div class="app-grid" />
     <div class="app-bg">
-      <div class="app-frame" />
-      <div class="app-frame-glow" />
-      <div v-if="showOrnaments" v-for="pos in ['tl','tr','bl','br']" :key="pos" :class="`corner-ornament corner-ornament--${pos}`">
+      <template v-if="showLotteryBackground">
+        <div class="app-frame" />
+        <div class="app-frame-glow" />
+      </template>
+      <div v-if="showLotteryBackground" v-for="pos in ['tl','tr','bl','br']" :key="pos" :class="`corner-ornament corner-ornament--${pos}`">
         <svg width="118" height="118" viewBox="0 0 118 118" fill="none" xmlns="http://www.w3.org/2000/svg">
           <path d="M2 116 L2 2 L116 2" stroke="var(--ornament-gold)" stroke-width="3" stroke-linecap="round"/>
           <path d="M2 100 L2 18 Q2 2 18 2 L100 2" stroke="var(--ornament-gold)" stroke-width="2.2" stroke-linecap="round"/>
