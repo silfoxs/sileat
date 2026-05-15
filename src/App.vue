@@ -1,17 +1,11 @@
 <script setup lang="ts">
 import PillMenu from './components/PillMenu.vue'
-import { useFoodStore } from './stores/food'
-import { onMounted, computed } from 'vue'
+import { computed } from 'vue'
 import { getCurrentWindow } from '@tauri-apps/api/window'
 import { useRoute } from 'vue-router'
 
-const foodStore = useFoodStore()
 const route = useRoute()
 const showOrnaments = computed(() => route.name === 'lottery')
-
-onMounted(() => {
-  foodStore.loadAll()
-})
 
 function closeApp() {
   getCurrentWindow().close()

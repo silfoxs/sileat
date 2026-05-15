@@ -44,7 +44,6 @@ const currentItem = computed(() => {
 
 onMounted(() => {
   updateShimmerItems()
-  foodStore.loadAll().then(updateShimmerItems)
 })
 
 function updateShimmerItems() {
@@ -65,53 +64,102 @@ function selectTag(tag: string | null) {
   updateShimmerItems()
 }
 
-function runSpinAnimation() {
+async function openTagDialog() {
+  showTagDialog.value = true
+  if (!foodStore.loaded) {
+    await foodStore.loadAll()
+    updateShimmerItems()
+  }
+}
+
+function waitForFirstSpinPaint() {
+  return new Promise<void>((resolve) => {
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        setTimeout(resolve, 120)
+      })
+    })
+  })
+}
+
+function runSpinAnimation(canFinish: () => boolean) {
   let elapsed = 0
   const totalDuration = 2200
-  let lastTick = performance.now()
+  let lastFrame = performance.now()
+  let nextShuffleAt = 0
 
   return new Promise<void>((resolve) => {
-    function tick() {
-      const now = performance.now()
-      const dt = now - lastTick
-      lastTick = now
+    function frame(now: number) {
+      const dt = now - lastFrame
+      lastFrame = now
       elapsed += dt
 
       const progress = Math.min(elapsed / totalDuration, 1)
-
       spinSpeed.value = 40 + progress * 200
-
       cardScale.value = 1 + Math.sin(elapsed * 0.01) * 0.03
-
       glowIntensity.value = progress * 0.6
 
-      shimmerIndex.value = (shimmerIndex.value + 1) % shimmerItems.value.length
+      if (elapsed >= nextShuffleAt) {
+        shimmerIndex.value = (shimmerIndex.value + 1) % shimmerItems.value.length
+        nextShuffleAt = elapsed + spinSpeed.value
+      }
 
-      if (progress < 1) {
-        setTimeout(tick, spinSpeed.value)
-      } else {
+      if (progress >= 1 && canFinish()) {
         resolve()
+      } else {
+        requestAnimationFrame(frame)
       }
     }
 
-    tick()
+    requestAnimationFrame(frame)
   })
 }
 
 async function handleSpin() {
-  if ((spinPhase.value !== 'idle' && spinPhase.value !== 'result') || availableCount.value === 0) return
+  if (spinPhase.value !== 'idle' && spinPhase.value !== 'result') return
+  if (foodStore.loaded && availableCount.value === 0) return
 
   updateShimmerItems()
   showConfetti.value = false
   spinPhase.value = 'spinning'
   spinSpeed.value = 50
   glowIntensity.value = 0
+  let resultReady = false
+  let hasCandidates = true
 
   await nextTick()
-  const animation = runSpinAnimation()
+  const animation = runSpinAnimation(() => resultReady)
+  await waitForFirstSpinPaint()
 
-  lotteryStore.spin(filteredItems.value)
+  try {
+    if (!foodStore.loaded) {
+      await foodStore.loadAll()
+      updateShimmerItems()
+    }
+
+    const candidates = filteredItems.value
+    if (candidates.length === 0) {
+      lotteryStore.reset()
+      hasCandidates = false
+    } else {
+      lotteryStore.spin(candidates)
+    }
+  } catch (error) {
+    console.error('Failed to load lottery candidates', error)
+    lotteryStore.reset()
+    hasCandidates = false
+  } finally {
+    resultReady = true
+  }
+
   await animation
+
+  if (!hasCandidates || !lotteryStore.result) {
+    spinPhase.value = 'idle'
+    cardScale.value = 1
+    glowIntensity.value = 0
+    return
+  }
 
   // Show result directly
   spinPhase.value = 'result'
@@ -127,6 +175,10 @@ async function handleSpin() {
 
 <template>
   <div class="page-shell flex flex-col items-center">
+    <span class="emoji-prewarm" aria-hidden="true">
+      {{ fallbackShimmerItems.map(item => item.emoji).join('') }}
+    </span>
+
     <Motion
       :initial="{ opacity: 0, y: -15 }"
       :animate="{ opacity: 1, y: 0 }"
@@ -136,7 +188,7 @@ async function handleSpin() {
       <div class="flex w-full max-w-sm flex-col items-center text-center">
         <h1 class="w-full text-center text-[34px] font-extrabold leading-tight text-foreground">今天吃什么</h1>
         <p class="mt-3 text-sm leading-6 text-muted-foreground">
-          {{ availableCount > 0 ? '轻点卡片，把纠结交给运气。' : '先去后厨添加几个常吃选项。' }}
+          {{ !foodStore.loaded || availableCount > 0 ? '轻点卡片，把纠结交给运气。' : '先去后厨添加几个常吃选项。' }}
         </p>
       </div>
     </Motion>
@@ -157,7 +209,7 @@ async function handleSpin() {
         />
 
         <div
-          class="relative flex min-h-[318px] flex-col items-center justify-center rounded-2xl p-8 transition-transform"
+          class="lottery-card relative flex min-h-[318px] flex-col items-center justify-center rounded-2xl p-8 transition-transform"
           :style="{
             transform: `scale(${cardScale})`,
             transitionDuration: '100ms',
@@ -221,10 +273,10 @@ async function handleSpin() {
               <UtensilsCrossed class="h-12 w-12 text-primary" />
             </div>
             <p class="relative z-10 mb-2 text-xl font-bold text-foreground">
-              {{ availableCount > 0 ? '点击翻牌' : '暂无选项' }}
+              {{ !foodStore.loaded || availableCount > 0 ? '点击翻牌' : '暂无选项' }}
             </p>
             <p class="relative z-10 text-base text-muted-foreground">
-              {{ availableCount > 0 ? '看看今天吃什么' : '先去后厨添加一些' }}
+              {{ !foodStore.loaded || availableCount > 0 ? '看看今天吃什么' : '先去后厨添加一些' }}
             </p>
           </template>
         </div>
@@ -233,10 +285,10 @@ async function handleSpin() {
       <button
         type="button"
         class="relative z-10 mt-8 inline-flex items-center gap-1.5 rounded-full bg-secondary/70 px-3 py-1 text-xs font-medium text-muted-foreground transition-colors hover:bg-secondary"
-        @click="showTagDialog = true"
+        @click="openTagDialog"
       >
         <Tags class="h-3.5 w-3.5" />
-        {{ availableCount > 0 ? `${selectedTagName}有 ${availableCount}份惊喜哦` : `${selectedTagName}暂无惊喜` }}
+        {{ !foodStore.loaded ? `${selectedTagName}准备中` : availableCount > 0 ? `${selectedTagName}有 ${availableCount}份惊喜哦` : `${selectedTagName}暂无惊喜` }}
       </button>
     </div>
 
@@ -318,6 +370,17 @@ async function handleSpin() {
 </template>
 
 <style scoped>
+.emoji-prewarm {
+  position: absolute;
+  pointer-events: none;
+  opacity: 0;
+  transform: translateX(-9999px);
+}
+
+.lottery-card {
+  will-change: transform;
+}
+
 .confetti-piece {
   width: var(--size);
   height: var(--size);
