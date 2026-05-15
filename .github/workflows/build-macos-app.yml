@@ -41,30 +41,33 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Build macOS app
-        run: pnpm tauri build --bundles app
+      - name: Build macOS DMG
+        run: pnpm tauri build --bundles dmg
 
-      - name: Package app artifact
+      - name: Package DMG artifact
         run: |
           mkdir -p artifacts
-          APP_PATH="$(find src-tauri/target/release/bundle/macos -maxdepth 1 -name '*.app' -type d | head -n 1)"
+          VERSION="$(node -p "require('./src-tauri/tauri.conf.json').version")"
+          SHORT_SHA="$(git rev-parse --short HEAD)"
+          DMG_PATH="$(find src-tauri/target/release/bundle/dmg -maxdepth 1 -name '*.dmg' -type f | head -n 1)"
 
-          if [ -z "$APP_PATH" ]; then
-            echo "No .app bundle found"
+          if [ -z "$DMG_PATH" ]; then
+            echo "No .dmg artifact found"
             exit 1
           fi
 
-          ditto -c -k --keepParent "$APP_PATH" artifacts/sileat-macos-app.zip
+          cp "$DMG_PATH" "artifacts/sileat-${VERSION}-macos-${SHORT_SHA}.dmg"
 
       - name: Create GitHub Release
         env:
           GH_TOKEN: ${{ github.token }}
-          RELEASE_TAG: macos-app-${{ github.run_number }}-${{ github.run_attempt }}
         run: |
+          VERSION="$(node -p "require('./src-tauri/tauri.conf.json').version")"
           SHORT_SHA="$(git rev-parse --short HEAD)"
+          DMG_PATH="$(find artifacts -maxdepth 1 -name '*.dmg' -type f | head -n 1)"
 
-          gh release create "$RELEASE_TAG" \
-            artifacts/sileat-macos-app.zip \
+          gh release create "sileat-v${VERSION}" \
+            "$DMG_PATH" \
             --target "$GITHUB_SHA" \
-            --title "今天吃什么 macOS App ${SHORT_SHA}" \
-            --notes "Automated macOS app build for commit ${GITHUB_SHA}."
+            --title "今天吃什么 macOS ${VERSION} ${SHORT_SHA}" \
+            --notes "Automated macOS DMG build for commit ${GITHUB_SHA}."
