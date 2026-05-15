@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, nextTick } from 'vue'
 import { Motion } from 'motion-v'
 import { useFoodStore } from '../stores/food'
 import { useLotteryStore } from '../stores/lottery'
@@ -15,7 +15,13 @@ const spinSpeed = ref(60)
 const cardScale = ref(1)
 const glowIntensity = ref(0)
 
-const shimmerItems = ref<{ emoji: string; title: string; description: string }[]>([])
+const fallbackShimmerItems = [
+  { emoji: '🍜', title: '兰州拉面', description: '一碗热腾腾的牛肉面' },
+  { emoji: '🍕', title: '披萨', description: '芝士就是力量' },
+  { emoji: '🍣', title: '寿司', description: '新鲜的鱼生搭配醋饭' },
+]
+
+const shimmerItems = ref<{ emoji: string; title: string; description: string }[]>(fallbackShimmerItems)
 
 const availableCount = computed(() => foodStore.items.filter(i => !i.skip_today).length)
 
@@ -24,63 +30,63 @@ const currentItem = computed(() => {
   return null
 })
 
-onMounted(async () => {
-  await foodStore.loadAll()
+onMounted(() => {
   updateShimmerItems()
+  foodStore.loadAll().then(updateShimmerItems)
 })
 
 function updateShimmerItems() {
   const items = foodStore.items.filter(i => !i.skip_today).map(i => ({ emoji: i.emoji, title: i.title, description: i.description || '' }))
-  shimmerItems.value = items.length > 0
-    ? [...items, ...items, ...items].slice(0, 12)
-    : [
-        { emoji: '🍜', title: '兰州拉面', description: '一碗热腾腾的牛肉面' },
-        { emoji: '🍕', title: '披萨', description: '芝士就是力量' },
-        { emoji: '🍣', title: '寿司', description: '新鲜的鱼生搭配醋饭' },
-      ]
+  shimmerItems.value = items.length > 0 ? [...items, ...items, ...items].slice(0, 12) : fallbackShimmerItems
+}
+
+function runSpinAnimation() {
+  let elapsed = 0
+  const totalDuration = 2200
+  let lastTick = performance.now()
+
+  return new Promise<void>((resolve) => {
+    function tick() {
+      const now = performance.now()
+      const dt = now - lastTick
+      lastTick = now
+      elapsed += dt
+
+      const progress = Math.min(elapsed / totalDuration, 1)
+
+      spinSpeed.value = 40 + progress * 200
+
+      cardScale.value = 1 + Math.sin(elapsed * 0.01) * 0.03
+
+      glowIntensity.value = progress * 0.6
+
+      shimmerIndex.value = (shimmerIndex.value + 1) % shimmerItems.value.length
+
+      if (progress < 1) {
+        setTimeout(tick, spinSpeed.value)
+      } else {
+        resolve()
+      }
+    }
+
+    tick()
+  })
 }
 
 async function handleSpin() {
   if ((spinPhase.value !== 'idle' && spinPhase.value !== 'result') || availableCount.value === 0) return
 
+  updateShimmerItems()
   showConfetti.value = false
   spinPhase.value = 'spinning'
   spinSpeed.value = 50
   glowIntensity.value = 0
 
-  // Phase 1: Fast spinning with increasing speed
-  let elapsed = 0
-  const totalDuration = 2200
-  let lastTick = Date.now()
+  await nextTick()
+  const animation = runSpinAnimation()
 
-  function tick() {
-    const now = Date.now()
-    const dt = now - lastTick
-    lastTick = now
-    elapsed += dt
-
-    // Progress 0 → 1
-    const progress = Math.min(elapsed / totalDuration, 1)
-
-    // Speed curve: fast → slow (ease-out)
-    spinSpeed.value = 40 + progress * 200
-
-    // Scale pulsing during spin
-    cardScale.value = 1 + Math.sin(elapsed * 0.01) * 0.03
-
-    // Glow increases
-    glowIntensity.value = progress * 0.6
-
-    shimmerIndex.value = (shimmerIndex.value + 1) % shimmerItems.value.length
-
-    if (progress < 1) {
-      setTimeout(tick, spinSpeed.value)
-    }
-  }
-
-  tick()
-
-  await lotteryStore.spin()
+  lotteryStore.spin()
+  await animation
 
   // Show result directly
   spinPhase.value = 'result'

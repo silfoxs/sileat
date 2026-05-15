@@ -6,15 +6,25 @@ import { useDatabase } from '../composables/useDatabase'
 export const useFoodStore = defineStore('food', () => {
   const items = ref<FoodItem[]>([])
   const loading = ref(false)
+  const loaded = ref(false)
+  let loadPromise: Promise<void> | null = null
 
   async function loadAll() {
+    if (loadPromise) return loadPromise
+
     loading.value = true
-    try {
+    loadPromise = (async () => {
       const db = await useDatabase()
       const result = await db.select<FoodItem[]>('SELECT * FROM food_items ORDER BY created_at DESC')
       items.value = result
+      loaded.value = true
+    })()
+
+    try {
+      await loadPromise
     } finally {
       loading.value = false
+      loadPromise = null
     }
   }
 
@@ -51,5 +61,5 @@ export const useFoodStore = defineStore('food', () => {
     await loadAll()
   }
 
-  return { items, loading, loadAll, add, update, remove, toggleSkipToday }
+  return { items, loading, loaded, loadAll, add, update, remove, toggleSkipToday }
 })

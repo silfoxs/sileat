@@ -1,6 +1,7 @@
 import Database from '@tauri-apps/plugin-sql'
 
 let db: Database | null = null
+let dbPromise: Promise<Database> | null = null
 
 const INIT_SQL = `
 CREATE TABLE IF NOT EXISTS food_items (
@@ -26,12 +27,23 @@ ALTER TABLE food_items ADD COLUMN skip_today INTEGER NOT NULL DEFAULT 0;
 
 export async function useDatabase() {
   if (!db) {
-    db = await Database.load('sqlite:sileat.db')
-    await db.execute(INIT_SQL)
+    dbPromise ??= (async () => {
+      const database = await Database.load('sqlite:sileat.db')
+      await database.execute(INIT_SQL)
+      try {
+        await database.execute(MIGRATE_SQL)
+      } catch {
+        // column already exists
+      }
+      db = database
+      return database
+    })()
+
     try {
-      await db.execute(MIGRATE_SQL)
-    } catch {
-      // column already exists
+      db = await dbPromise
+    } catch (error) {
+      dbPromise = null
+      throw error
     }
   }
   return db
