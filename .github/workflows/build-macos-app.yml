@@ -32,6 +32,8 @@ jobs:
 
       - name: Set up Rust
         uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: aarch64-apple-darwin,x86_64-apple-darwin
 
       - name: Cache Rust build
         uses: swatinem/rust-cache@v2
@@ -42,7 +44,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Build macOS DMG
-        run: pnpm tauri build --bundles dmg
+        run: pnpm tauri build --target universal-apple-darwin --bundles dmg
 
       - name: Package DMG artifact
         run: |
